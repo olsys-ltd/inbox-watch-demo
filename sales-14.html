@@ -1,0 +1,1396 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Inbox Watch · Prot****ical</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Crect%20width%3D%2216%22%20height%3D%2216%22%20rx%3D%224%22%20fill%3D%22%230b7285%22/%3E%3Cg%20transform%3D%22translate%281.6%201.6%29%20scale%28.8%29%22%20color%3D%22%23ffffff%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M3.5%202.5h9A1.5%201.5%200%200%201%2014%204v5.5a1.5%201.5%200%200%201-1.5%201.5H7.2L4.5%2013.6V11h-1A1.5%201.5%200%200%201%202%209.5V4a1.5%201.5%200%200%201%201.5-1.5z%22%20stroke%3D%22currentColor%22%20stroke-width%3D%221.5%22%20stroke-linejoin%3D%22round%22/%3E%3Cpath%20d%3D%22M5.4%206.9l1.8%201.8%203.4-3.5%22%20stroke%3D%22currentColor%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: app shell -- queue rail on the left, work area right; the SLA clock is the signature element. */
+:root{
+  --bg:#f2f4f6;--surface:#ffffff;--surface-2:#f7f8fa;--ink:#101418;--ink-2:#525a66;--ink-3:#868e9a;--line:#e1e5ea;
+  --accent:#0b7285;--accent-ink:#ffffff;--accent-wash:#e2f2f4;
+  --good:#0ca30c;--warning:#fab219;--serious:#ec835a;--critical:#d03b3b;
+  --critical-text:#b42323;--warning-text:#8a5a00;--good-text:#0a7a0a;
+  --neutral:#9aa1ab;--neutral-2:#cdd2d8;--track:#e8ebef;
+  --shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.06);
+  --font:"Geist","Segoe UI",system-ui,sans-serif;--mono:"Geist Mono",ui-monospace,Consolas,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+  --bg:#0f1216;--surface:#161a1f;--surface-2:#1b2026;--ink:#eaedf0;--ink-2:#a6adb8;--ink-3:#727a86;--line:#262c34;
+  --accent:#3bc9db;--accent-ink:#06191c;--accent-wash:#10292e;
+  --critical-text:#f28b8b;--warning-text:#f6c453;--good-text:#5fd35f;
+  --neutral:#6d7582;--neutral-2:#434a55;--track:#252b33;--shadow:none}}
+:root[data-theme="dark"]{color-scheme:dark;
+  --bg:#0f1216;--surface:#161a1f;--surface-2:#1b2026;--ink:#eaedf0;--ink-2:#a6adb8;--ink-3:#727a86;--line:#262c34;
+  --accent:#3bc9db;--accent-ink:#06191c;--accent-wash:#10292e;
+  --critical-text:#f28b8b;--warning-text:#f6c453;--good-text:#5fd35f;
+  --neutral:#6d7582;--neutral-2:#434a55;--track:#252b33;--shadow:none}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 var(--font);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+.shell{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}
+.rail{position:sticky;top:0;height:100vh;overflow:auto;border-right:1px solid var(--line);background:var(--surface);
+  padding:20px 14px max(20px,env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:22px}
+.brand{display:flex;align-items:center;gap:10px;padding:0 6px}
+.brand-mark{width:28px;height:28px;border-radius:8px;background:var(--accent);display:grid;place-items:center;color:var(--accent-ink)}
+.brand div b{display:block;font-size:15px;letter-spacing:-.01em}
+.brand div span{display:block;font-size:11.5px;color:var(--ink-3)}
+.rail h3{margin:0 6px 6px;font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.queues{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}
+.queues a{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;text-decoration:none;color:var(--ink-2)}
+.queues a:hover{background:var(--surface-2);color:var(--ink)}
+.queues a.on{background:var(--accent-wash);color:var(--ink);font-weight:500}
+.queues .q-name{display:flex;flex-direction:column;line-height:1.25}
+.queues .q-sub{font-size:11.5px;color:var(--ink-3);font-weight:400}
+.count{font:500 11.5px var(--mono);min-width:26px;text-align:center;padding:1px 7px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2)}
+.count.hot{background:var(--critical);border-color:var(--critical);color:#fff}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:3px;background:var(--surface-2);border:1px solid var(--line);border-radius:9px}
+.seg a{text-align:center;padding:5px 0;border-radius:6px;text-decoration:none;color:var(--ink-2);font-size:12.5px}
+.seg a.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow);font-weight:500}
+.who{display:flex;flex-direction:column;gap:6px;padding:0 6px}
+.who label{font-size:12px;color:var(--ink-3)}
+.who input{font:inherit;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);color:var(--ink)}
+.rail-foot{margin-top:auto;display:flex;flex-direction:column;gap:10px;padding:0 6px;font-size:11.5px;color:var(--ink-3)}
+.theme-btn{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--line);border-radius:8px;padding:5px 10px;cursor:pointer;color:var(--ink-2);width:max-content}
+
+main{padding:24px max(16px,env(safe-area-inset-right,0px)) 64px 28px;display:flex;flex-direction:column;gap:22px;min-width:0}
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.head h1{margin:0;font-size:26px;font-weight:600;letter-spacing:-.02em;text-wrap:balance}
+.head p{margin:2px 0 0;color:var(--ink-2)}
+.pill{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--ink-2)}
+.pill b{color:var(--warning-text);font-weight:500}
+
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:4px;box-shadow:var(--shadow)}
+.tile .lbl{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-2)}
+.tile .val{font-size:30px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1}
+.tile .sub{font-size:12px;color:var(--ink-3)}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
+
+.work{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:22px;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.panel-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.panel-head h2{margin:0;font-size:15px;font-weight:600}
+.panel-head span{font-size:12px;color:var(--ink-3)}
+.side{display:flex;flex-direction:column;gap:22px;min-width:0}
+
+.group-h{display:flex;align-items:center;gap:8px;padding:10px 16px;font:500 11px var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);background:var(--surface-2);border-bottom:1px solid var(--line)}
+.rows{list-style:none;margin:0;padding:0}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"top clock" "subj subj" "from acts";gap:6px 20px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);transition:opacity .25s,transform .25s,background .15s}
+.row-top{grid-area:top;min-width:0}
+.row .clock{grid-area:clock;width:168px;justify-self:end}
+.row .subject{grid-area:subj;white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;line-height:1.4;font-size:14.5px}
+.row .from{grid-area:from;min-width:0}
+.row .acts{grid-area:acts;justify-self:end;flex-wrap:wrap;justify-content:flex-end}
+.row:hover{background:var(--surface-2)}
+.row.leaving{opacity:0;transform:translateX(24px)}
+.row-top{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:12px;color:var(--ink-3)}
+.status{display:inline-flex;align-items:center;gap:6px;font-weight:500;font-size:12px}
+.s-overdue .status{color:var(--critical-text)}.s-risk .status{color:var(--warning-text)}.s-junk .status{color:var(--ink-2)}
+.mbx{font-family:var(--mono);color:var(--ink-2)}
+.chip{font:500 11px var(--mono);padding:1px 7px;border-radius:5px;background:var(--accent-wash);color:var(--accent)}
+.subject{font-weight:500;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.from{font-size:12.5px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.clock{display:flex;flex-direction:column;gap:5px}
+.meter{position:relative;height:6px;border-radius:3px;background:var(--track)}
+.meter i{position:absolute;inset:0 auto 0 0;border-radius:3px}
+.meter .warn,.meter .due{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--surface);}
+.meter .warn{left:75%}
+.clock-l{display:flex;justify-content:space-between;font:12px var(--mono);font-variant-numeric:tabular-nums;color:var(--ink-3)}
+.s-overdue .clock-l b{color:var(--critical-text);font-weight:500}.s-risk .clock-l b{color:var(--warning-text);font-weight:500}
+.clock-l b{color:var(--ink-2);font-weight:500}
+.acts{display:flex;gap:6px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);cursor:pointer;text-decoration:none;font-size:12.5px;font-weight:500;color:var(--ink);white-space:nowrap}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn[disabled]{opacity:.6;cursor:progress}
+.btn.ghost{border-color:transparent;background:none;color:var(--ink-3);padding-inline:8px}
+.btn.ghost:hover{color:var(--ink);background:var(--surface-2)}
+.acts form{margin:0}
+.fl{list-style:none;margin:0;padding:6px 0}
+.fl li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 16px;font-size:13px}
+.fl li span:last-child{font-family:var(--mono);color:var(--ink-2)}
+.fl .sender{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.fl-h{padding:8px 16px 0;font:500 10.5px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3)}
+.more{display:block;padding:12px 16px;text-align:center;color:var(--accent);font-weight:500;text-decoration:none}
+.empty{padding:40px 16px;text-align:center;color:var(--ink-3)}
+
+.chart{padding:12px 16px 14px;display:flex;flex-direction:column;gap:10px}
+.chart svg{width:100%;height:auto;display:block;overflow:visible}
+.chart .ax{fill:var(--ink-3);font:10.5px var(--mono)}
+.chart .val{fill:var(--ink-2);font:500 10.5px var(--mono)}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .ref{stroke:var(--ink-3);stroke-width:1;stroke-dasharray:3 3}
+.chart .refl{fill:var(--ink-3);font:10px var(--mono)}
+.chart rect.hit{fill:transparent}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.caption{font-size:12px;color:var(--ink-3)}
+details.tbl summary{cursor:pointer;font-size:12px;color:var(--ink-3)}
+details.tbl table{width:100%;border-collapse:collapse;font:11.5px var(--mono);margin-top:6px}
+details.tbl th,details.tbl td{padding:3px 4px;border-bottom:1px solid var(--line);text-align:right}
+details.tbl th:first-child,details.tbl td:first-child{text-align:left}
+.tbl-wrap{overflow-x:auto}
+
+.mtable{width:100%;border-collapse:collapse;font-size:13px}
+.mtable th{font:500 10.5px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);text-align:right;padding:8px 16px 6px;border-bottom:1px solid var(--line)}
+.mtable td{padding:8px 16px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums}
+.mtable th:first-child,.mtable td:first-child{text-align:left}
+.mtable tr:last-child td{border-bottom:0}
+.pct{display:inline-flex;align-items:center;gap:8px;justify-content:flex-end}
+.pct .bar{width:56px;height:5px;border-radius:3px;background:var(--track);position:relative;overflow:hidden}
+.pct .bar i{position:absolute;inset:0 auto 0 0;background:var(--good)}
+
+.feed{list-style:none;margin:0;padding:4px 0}
+.feed li{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 16px}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--accent-wash);color:var(--accent);display:grid;place-items:center;font:600 11px var(--font)}
+.feed .t{overflow:hidden}
+.feed .t div{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.feed .t small{color:var(--ink-3);font-size:12px}
+.link-btn{background:none;border:0;color:var(--accent);cursor:pointer;font-size:12px;font-weight:500;padding:2px 4px}
+.note{font-size:12.5px;color:var(--ink-3);max-width:72ch;line-height:1.55;margin:0}
+
+#tip{position:fixed;pointer-events:none;z-index:50;background:var(--ink);color:var(--bg);font:12px var(--font);padding:6px 9px;border-radius:7px;box-shadow:0 4px 14px rgba(0,0,0,.18);white-space:nowrap}
+.toast{position:fixed;left:50%;bottom:max(20px,calc(env(safe-area-inset-bottom,0px) + 12px));transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:14px;background:var(--ink);color:var(--bg);padding:10px 12px 10px 16px;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.22);font-size:13px}
+.toast button{background:none;border:0;color:var(--accent);font-weight:600;cursor:pointer;padding:4px 6px}
+:root[data-theme="dark"] .toast button{color:#0b7285}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .toast button{color:#0b7285}}
+
+@media (max-width:1180px){.work{grid-template-columns:1fr}.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:760px){
+  .shell{grid-template-columns:1fr}
+  .rail{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:14px max(16px,env(safe-area-inset-left,0px)) 14px max(16px,env(safe-area-inset-right,0px));gap:12px}
+  .queues{flex-direction:row;overflow-x:auto;gap:6px}
+  .queues a{white-space:nowrap}
+  .queues .q-sub,.rail-foot .src{display:none}
+  .rail-foot{margin-top:0}
+  main{padding:18px max(16px,env(safe-area-inset-right,0px)) 48px max(16px,env(safe-area-inset-left,0px))}
+  .row{grid-template-columns:1fr;grid-template-areas:"top" "clock" "subj" "from" "acts";gap:8px}
+  .row .acts{justify-self:start;justify-content:flex-start}
+  .row .clock{width:100%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body>
+<div id="app" class="shell">
+<aside class="rail">
+  <div class="brand"><span class="brand-mark"><svg width="17" height="17" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 2.5h9A1.5 1.5 0 0 1 14 4v5.5a1.5 1.5 0 0 1-1.5 1.5H7.2L4.5 13.6V11h-1A1.5 1.5 0 0 1 2 9.5V4a1.5 1.5 0 0 1 1.5-1.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M5.4 6.9l1.8 1.8 3.4-3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>Inbox Watch</b><span>Prot****ical</span></div></div>
+  <nav aria-label="Mailboxes"><h3>Queues</h3><ul class="queues"><li><a href="index.html" class=""><span class="q-name">All mailboxes<span class="q-sub">950 threads</span></span><span class="count hot">506</span></a></li><li><a href="global-14.html" class=""><span class="q-name">global@<span class="q-sub">175 threads · 41% in time</span></span><span class="count hot">40</span></a></li><li><a href="hello-14.html" class=""><span class="q-name">hello@<span class="q-sub">stale: data from 02 Nov</span></span><span class="count">0</span></a></li><li><a href="latam-14.html" class=""><span class="q-name">latam@<span class="q-sub">24 threads · 0% in time</span></span><span class="count hot">23</span></a></li><li><a href="orders-14.html" class=""><span class="q-name">orders@<span class="q-sub">656 threads · 3% in time</span></span><span class="count hot">385</span></a></li><li><a href="rma-14.html" class=""><span class="q-name">rma@<span class="q-sub">15 threads · 60% in time</span></span><span class="count hot">1</span></a></li><li><a href="sales-14.html" class="on"><span class="q-name">sales@<span class="q-sub">stale: data from 02 Nov</span></span><span class="count hot">57</span></a></li></ul></nav>
+  <div><h3>Period</h3><div class="seg"><a href="sales-7.html" class="">7 days</a><a href="sales-14.html" class="on">14 days</a><a href="sales-30.html" class="">30 days</a></div></div>
+  <div class="who"><label for="who">You are</label><input id="who" value="Demo user" autocomplete="off"></div>
+  <div class="rail-foot"><div style="display:flex;flex-wrap:wrap;gap:6px"><button class="theme-btn" id="theme-btn" type="button"><span>Theme: system</span></button>
+    <a class="theme-btn" href="architecture.html" style="text-decoration:none">Architecture →</a>
+    <a class="theme-btn" href="later.html" style="text-decoration:none">Later phases →</a></div>
+    <span class="src">Data as of Tue 03 Nov 2026, 16:30 UTC. Read-only: nothing is written to the mailboxes.</span></div>
+</aside>
+<main>
+  <div class="head"><div><h1>sales@</h1><p>Customer threads that started in the last 14 days</p></div>
+    <span style="display:flex;flex-wrap:wrap;gap:6px;align-items:center"><span class="pill" style="background:var(--accent-wash);color:var(--accent);border-color:transparent;font-weight:600">Phase 1 · MVP</span>
+    <span class="pill"><b>Public demo</b> · data masked · snapshot 03 Nov 16:30 UTC</span></span></div>
+  <div class="tiles"><div class="tile"><span class="lbl"><i class="dot" style="background:var(--critical)"></i>Overdue</span><span class="val">36</span><span class="sub">no visible reply after the deadline</span></div><div class="tile"><span class="lbl"><i class="dot" style="background:var(--warning)"></i>At risk</span><span class="val">1</span><span class="sub">past 75 % of the deadline</span></div><div class="tile"><span class="lbl"><i class="dot" style="background:var(--neutral)"></i>In Junk</span><span class="val">20</span><span class="sub">customer mail nobody answered</span></div><div class="tile"><span class="lbl"><i class="dot" style="background:var(--good)"></i>Answered in time</span><span class="val">8%</span><span class="sub">3 of 39 with a known time</span></div></div>
+  <div class="work">
+    <section class="panel" aria-label="Needs attention">
+      <div class="panel-head"><h2>Needs attention</h2><span>57 threads · most urgent first</span></div>
+      <div class="group-h">Overdue <span class="mono">· 36</span></div><ul class="rows"><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Tue 20 Oct, 18:06</span></div>
+  <div class="clock" data-tip="334 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+286 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="PO 2****6770">PO 2****6770</div>
+  <div class="from" title="acar****.org">acar****.org</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="fd97fa44ce6c3148">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="fd97fa44ce6c3148">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="acar****.org"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from acar****.org">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Tue 20 Oct, 18:26</span></div>
+  <div class="clock" data-tip="334 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+286 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="RFQ ****ment">RFQ ****ment</div>
+  <div class="from" title="lari****.com">lari****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="397d21e00c54f07a">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="397d21e00c54f07a">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="lari****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from lari****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Tue 20 Oct, 20:04</span></div>
+  <div class="clock" data-tip="332 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+284 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="Tale****etto">Tale****etto</div>
+  <div class="from" title="tale****.com">tale****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="0a52f6a16fd547a5">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="0a52f6a16fd547a5">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="tale****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from tale****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Tue 20 Oct, 20:34</span></div>
+  <div class="clock" data-tip="332 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+284 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="Purc****eply">Purc****eply</div>
+  <div class="from" title="arch****.com">arch****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="a37c22579b19d98f">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="a37c22579b19d98f">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="arch****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from arch****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Wed 21 Oct, 11:39</span></div>
+  <div class="clock" data-tip="317 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+269 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="PO****">PO****</div>
+  <div class="from" title="just****.org">just****.org</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="1aead91ebde35a8f">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="1aead91ebde35a8f">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="just****.org"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from just****.org">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span class="chip">eyewear</span><span>Wed 21 Oct, 15:30</span></div>
+  <div class="clock" data-tip="313 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+265 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="SECO****0-21">SECO****0-21</div>
+  <div class="from" title="john****.com">john****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="76e3d42b379b2d20">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="76e3d42b379b2d20">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="john****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from john****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Wed 21 Oct, 19:01</span></div>
+  <div class="clock" data-tip="309 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+262 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="BayC****66-0">BayC****66-0</div>
+  <div class="from" title="mmcu****.org">mmcu****.org</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="21b951829436255b">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="21b951829436255b">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="mmcu****.org"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from mmcu****.org">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Wed 21 Oct, 19:22</span></div>
+  <div class="clock" data-tip="309 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+261 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="What****ity?">What****ity?</div>
+  <div class="from" title="emai****.com">emai****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="b35b8f1f2d4cb886">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="b35b8f1f2d4cb886">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="emai****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from emai****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Thu 22 Oct, 12:57</span></div>
+  <div class="clock" data-tip="292 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+244 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="STAT****60  ">STAT****60  </div>
+  <div class="from" title="jste****.com">jste****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="41bbf21ac5d77867">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="41bbf21ac5d77867">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="jste****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from jste****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Thu 22 Oct, 13:45</span></div>
+  <div class="clock" data-tip="291 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+243 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="Requ****Inc.">Requ****Inc.</div>
+  <div class="from" title="thom****.com">thom****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="58025743e60aa57f">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="58025743e60aa57f">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="thom****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from thom****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Thu 22 Oct, 15:16</span></div>
+  <div class="clock" data-tip="289 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+241 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="Purc****4697">Purc****4697</div>
+  <div class="from" title="meta****.com">meta****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="f6bdb6f8a3c55ead">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="f6bdb6f8a3c55ead">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="meta****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from meta****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Fri 23 Oct, 12:07</span></div>
+  <div class="clock" data-tip="268 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+220 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="Apro****zing">Apro****zing</div>
+  <div class="from" title="jenn****.edu">jenn****.edu</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="a63296f780ea7327">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="a63296f780ea7327">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="jenn****.edu"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from jenn****.edu">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Fri 23 Oct, 14:22</span></div>
+  <div class="clock" data-tip="266 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+218 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="Expe****ing.">Expe****ing.</div>
+  <div class="from" title="emai****.com">emai****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="5e5efe79a87e3e22">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="5e5efe79a87e3e22">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="emai****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from emai****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Sat 24 Oct, 00:46</span></div>
+  <div class="clock" data-tip="256 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+208 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="[KIM****orea">[KIM****orea</div>
+  <div class="from" title="busa****.com">busa****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="fbe40cf239a7f0f9">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="fbe40cf239a7f0f9">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="busa****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from busa****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Sat 24 Oct, 19:03</span></div>
+  <div class="clock" data-tip="237 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+189 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="Sh****">Sh****</div>
+  <div class="from" title="tale****.com">tale****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="ca127fcbef5e3a56">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="ca127fcbef5e3a56">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="tale****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from tale****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Sun 25 Oct, 12:53</span></div>
+  <div class="clock" data-tip="220 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+172 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="REQU****CING">REQU****CING</div>
+  <div class="from" title="thom****.com">thom****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="433f9d2b4d89ba80">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="433f9d2b4d89ba80">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="thom****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from thom****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Tue 27 Oct, 06:00</span></div>
+  <div class="clock" data-tip="178 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+130 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="SERG****tion">SERG****tion</div>
+  <div class="from" title="part****.org">part****.org</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="47a1a37b8d7f753f">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="47a1a37b8d7f753f">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="part****.org"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from part****.org">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Tue 27 Oct, 06:28</span></div>
+  <div class="clock" data-tip="178 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+130 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="Be P****een.">Be P****een.</div>
+  <div class="from" title="ansa****.com">ansa****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="2d6d72a16b01fe0c">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="2d6d72a16b01fe0c">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="ansa****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from ansa****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Tue 27 Oct, 07:28</span></div>
+  <div class="clock" data-tip="177 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+129 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="Boot****026 ">Boot****026 </div>
+  <div class="from" title="bred****.com">bred****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="dba82d59236bb137">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="dba82d59236bb137">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="bred****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from bred****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span class="chip">eyewear</span><span>Tue 27 Oct, 13:09</span></div>
+  <div class="clock" data-tip="171 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+123 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="Prot****tics">Prot****tics</div>
+  <div class="from" title="part****c.de">part****c.de</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="1c80ab61e10d81db">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="1c80ab61e10d81db">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="part****c.de"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from part****c.de">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Wed 28 Oct, 15:24</span></div>
+  <div class="clock" data-tip="145 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+97 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="Medi****2026">Medi****2026</div>
+  <div class="from" title="emai****.com">emai****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="107c6d143a718c13">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="107c6d143a718c13">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="emai****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from emai****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Wed 28 Oct, 15:29</span></div>
+  <div class="clock" data-tip="145 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+97 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="Paym****ment">Paym****ment</div>
+  <div class="from" title="acco****.org">acco****.org</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="fce2806902f26a5e">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="fce2806902f26a5e">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="acco****.org"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from acco****.org">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Wed 28 Oct, 16:32</span></div>
+  <div class="clock" data-tip="144 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+96 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="PO08****2491">PO08****2491</div>
+  <div class="from" title="jpre****.com">jpre****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="be8326a45ead0cf0">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="be8326a45ead0cf0">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="jpre****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from jpre****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Wed 28 Oct, 19:13</span></div>
+  <div class="clock" data-tip="141 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+93 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="Look**** FTL">Look**** FTL</div>
+  <div class="from" title="haze****.com">haze****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="6d458e9ff4306638">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="6d458e9ff4306638">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="haze****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from haze****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Wed 28 Oct, 20:52</span></div>
+  <div class="clock" data-tip="140 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+92 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="Read****tion">Read****tion</div>
+  <div class="from" title="ggfa****.com">ggfa****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="db72419ea5c9ddcb">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="db72419ea5c9ddcb">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="ggfa****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from ggfa****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Thu 29 Oct, 02:29</span></div>
+  <div class="clock" data-tip="134 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+86 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="RSNA****Now ">RSNA****Now </div>
+  <div class="from" title="daho****.com">daho****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="230ba5eddac2924c">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="230ba5eddac2924c">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="daho****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from daho****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Thu 29 Oct, 04:02</span></div>
+  <div class="clock" data-tip="132 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+84 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="29 E**** Day">29 E**** Day</div>
+  <div class="from" title="expo****m.tr">expo****m.tr</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="1cd47355a5207b9e">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="1cd47355a5207b9e">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="expo****m.tr"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from expo****m.tr">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Thu 29 Oct, 09:14</span></div>
+  <div class="clock" data-tip="127 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+79 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="RFQ:****pron">RFQ:****pron</div>
+  <div class="from" title="sale****m.pk">sale****m.pk</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="af384c9846c0c622">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="af384c9846c0c622">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="sale****m.pk"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from sale****m.pk">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Thu 29 Oct, 12:15</span></div>
+  <div class="clock" data-tip="124 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+76 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="MEDI****tand">MEDI****tand</div>
+  <div class="from" title="domi****w.eu">domi****w.eu</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="2e291022f9a46b43">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="2e291022f9a46b43">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="domi****w.eu"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from domi****w.eu">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Thu 29 Oct, 15:04</span></div>
+  <div class="clock" data-tip="121 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+73 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="Octo****load">Octo****load</div>
+  <div class="from" title="emai****.com">emai****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="4d4db67beb6039f4">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="4d4db67beb6039f4">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="emai****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from emai****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Fri 30 Oct, 17:04</span></div>
+  <div class="clock" data-tip="95 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+47 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="Copy****amie">Copy****amie</div>
+  <div class="from" title="abra****.edu">abra****.edu</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="5c0fadbbf2e6d978">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="5c0fadbbf2e6d978">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="abra****.edu"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from abra****.edu">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Fri 30 Oct, 21:19</span></div>
+  <div class="clock" data-tip="91 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+43 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="Are ****now?">Are ****now?</div>
+  <div class="from" title="oilr****.com">oilr****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="ac9de0a6a5f5b992">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="ac9de0a6a5f5b992">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="oilr****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from oilr****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Fri 30 Oct, 21:19</span></div>
+  <div class="clock" data-tip="91 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+43 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="Reli****ical">Reli****ical</div>
+  <div class="from" title="max@****.com">max@****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="7225dee8d5c40861">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="7225dee8d5c40861">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="max@****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from max@****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Sun 01 Nov, 03:29</span></div>
+  <div class="clock" data-tip="61 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+13 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="STAT****5692">STAT****5692</div>
+  <div class="from" title="cece****.org">cece****.org</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="cbc8ff9db3c95382">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="cbc8ff9db3c95382">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="cece****.org"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from cece****.org">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Sun 01 Nov, 03:50</span></div>
+  <div class="clock" data-tip="61 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+13 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="Prin**** 432">Prin**** 432</div>
+  <div class="from" title="info****.org">info****.org</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="1b4dcc155790a1ec">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="1b4dcc155790a1ec">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="info****.org"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from info****.org">Not a customer</button></form>
+  </div>
+</li><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">sales@</span><span>Sun 01 Nov, 08:34</span></div>
+  <div class="clock" data-tip="56 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+8 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="Info****mber">Info****mber</div>
+  <div class="from" title="bull****.com">bull****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="b255adbfc46c7389">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="b255adbfc46c7389">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="bull****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from bull****.com">Not a customer</button></form>
+  </div>
+</li></ul><div class="group-h">At risk <span class="mono">· 1</span></div><ul class="rows"><li class="row s-risk">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--warning)"></i>At risk</span>
+    <span class="mbx">sales@</span><span>Mon 02 Nov, 02:36</span></div>
+  <div class="clock" data-tip="38 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:79%;background:var(--warning)"></i><span class="warn"></span></div><div class="clock-l"><b>10 h left</b><span>of 48 h</span></div></div>
+  <div class="subject" title="Your****ooth">Your****ooth</div>
+  <div class="from" title="info****.com">info****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="4d3cf6ec35491c22">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="4d3cf6ec35491c22">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="info****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from info****.com">Not a customer</button></form>
+  </div>
+</li></ul><div class="group-h">Customer mail in Junk <span class="mono">· 20</span></div><ul class="rows"><li class="row s-junk">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--neutral)"></i>In Junk</span>
+    <span class="mbx">sales@</span><span>Fri 30 Oct, 16:47</span></div>
+  <div class="clock"><div class="meter"><i style="width:100%;background:var(--neutral-2)"></i></div><div class="clock-l"><b>96 h</b><span>in Junk</span></div></div>
+  <div class="subject" title="Re: ****399?">Re: ****399?</div>
+  <div class="from" title="clai****.com">clai****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="6ed537d64c05aea8">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="6ed537d64c05aea8">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="clai****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from clai****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-junk">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--neutral)"></i>In Junk</span>
+    <span class="mbx">sales@</span><span>Fri 30 Oct, 18:32</span></div>
+  <div class="clock"><div class="meter"><i style="width:100%;background:var(--neutral-2)"></i></div><div class="clock-l"><b>94 h</b><span>in Junk</span></div></div>
+  <div class="subject" title="RE: ****ffer">RE: ****ffer</div>
+  <div class="from" title="vict****.com">vict****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="9f4c8fe582a66e4e">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="9f4c8fe582a66e4e">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="vict****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from vict****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-junk">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--neutral)"></i>In Junk</span>
+    <span class="mbx">sales@</span><span>Fri 30 Oct, 21:55</span></div>
+  <div class="clock"><div class="meter"><i style="width:100%;background:var(--neutral-2)"></i></div><div class="clock-l"><b>91 h</b><span>in Junk</span></div></div>
+  <div class="subject" title="Re: ****lan?">Re: ****lan?</div>
+  <div class="from" title="frid****.com">frid****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="410df4add07e621a">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="410df4add07e621a">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="frid****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from frid****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-junk">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--neutral)"></i>In Junk</span>
+    <span class="mbx">sales@</span><span>Sat 31 Oct, 00:35</span></div>
+  <div class="clock"><div class="meter"><i style="width:100%;background:var(--neutral-2)"></i></div><div class="clock-l"><b>88 h</b><span>in Junk</span></div></div>
+  <div class="subject" title="Re: ****here">Re: ****here</div>
+  <div class="from" title="zinn****.com">zinn****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="317c6306cddddee9">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="317c6306cddddee9">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="zinn****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from zinn****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-junk">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--neutral)"></i>In Junk</span>
+    <span class="mbx">sales@</span><span>Sat 31 Oct, 07:27</span></div>
+  <div class="clock"><div class="meter"><i style="width:100%;background:var(--neutral-2)"></i></div><div class="clock-l"><b>81 h</b><span>in Junk</span></div></div>
+  <div class="subject" title="Disc****2027">Disc****2027</div>
+  <div class="from" title="exhi****o.in">exhi****o.in</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="e53411d3083afd77">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="e53411d3083afd77">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="exhi****o.in"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from exhi****o.in">Not a customer</button></form>
+  </div>
+</li><li class="row s-junk">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--neutral)"></i>In Junk</span>
+    <span class="mbx">sales@</span><span>Sat 31 Oct, 12:01</span></div>
+  <div class="clock"><div class="meter"><i style="width:100%;background:var(--neutral-2)"></i></div><div class="clock-l"><b>76 h</b><span>in Junk</span></div></div>
+  <div class="subject" title="Ther****ting">Ther****ting</div>
+  <div class="from" title="vela****.com">vela****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="f4483829ad9f2a29">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="f4483829ad9f2a29">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="vela****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from vela****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-junk">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--neutral)"></i>In Junk</span>
+    <span class="mbx">sales@</span><span>Sat 31 Oct, 13:36</span></div>
+  <div class="clock"><div class="meter"><i style="width:100%;background:var(--neutral-2)"></i></div><div class="clock-l"><b>75 h</b><span>in Junk</span></div></div>
+  <div class="subject" title="Do Y****ote?">Do Y****ote?</div>
+  <div class="from" title="jeff****.com">jeff****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="87e655dbfb9c8010">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="87e655dbfb9c8010">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="jeff****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from jeff****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-junk">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--neutral)"></i>In Junk</span>
+    <span class="mbx">sales@</span><span>Sat 31 Oct, 19:53</span></div>
+  <div class="clock"><div class="meter"><i style="width:100%;background:var(--neutral-2)"></i></div><div class="clock-l"><b>69 h</b><span>in Junk</span></div></div>
+  <div class="subject" title="Opti****ooth">Opti****ooth</div>
+  <div class="from" title="embe****.com">embe****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="f62f6fdf0e83925b">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="f62f6fdf0e83925b">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="embe****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from embe****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-junk">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--neutral)"></i>In Junk</span>
+    <span class="mbx">sales@</span><span>Sun 01 Nov, 01:38</span></div>
+  <div class="clock"><div class="meter"><i style="width:100%;background:var(--neutral-2)"></i></div><div class="clock-l"><b>63 h</b><span>in Junk</span></div></div>
+  <div class="subject" title="Webs****nt ?">Webs****nt ?</div>
+  <div class="from" title="qaxr****.com">qaxr****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="a7a552f107c6cc58">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="a7a552f107c6cc58">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="qaxr****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from qaxr****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-junk">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--neutral)"></i>In Junk</span>
+    <span class="mbx">sales@</span><span>Sun 01 Nov, 16:04</span></div>
+  <div class="clock"><div class="meter"><i style="width:100%;background:var(--neutral-2)"></i></div><div class="clock-l"><b>48 h</b><span>in Junk</span></div></div>
+  <div class="subject" title="What****nth?">What****nth?</div>
+  <div class="from" title="offe****ting">offe****ting</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="c5e45541fa6cb2bb">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="c5e45541fa6cb2bb">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="offe****ting"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from offe****ting">Not a customer</button></form>
+  </div>
+</li><li class="row s-junk">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--neutral)"></i>In Junk</span>
+    <span class="mbx">sales@</span><span>Sun 01 Nov, 16:40</span></div>
+  <div class="clock"><div class="meter"><i style="width:100%;background:var(--neutral-2)"></i></div><div class="clock-l"><b>48 h</b><span>in Junk</span></div></div>
+  <div class="subject" title="Acti****2027">Acti****2027</div>
+  <div class="from" title="rese****.com">rese****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="9700fd30b6cd98c6">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="9700fd30b6cd98c6">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="rese****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from rese****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-junk">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--neutral)"></i>In Junk</span>
+    <span class="mbx">sales@</span><span>Sun 01 Nov, 18:53</span></div>
+  <div class="clock"><div class="meter"><i style="width:100%;background:var(--neutral-2)"></i></div><div class="clock-l"><b>46 h</b><span>in Junk</span></div></div>
+  <div class="subject" title="Viet****2027">Viet****2027</div>
+  <div class="from" title="info****.com">info****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="25df3e810fff4681">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="25df3e810fff4681">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="info****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from info****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-junk">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--neutral)"></i>In Junk</span>
+    <span class="mbx">sales@</span><span>Sun 01 Nov, 19:41</span></div>
+  <div class="clock"><div class="meter"><i style="width:100%;background:var(--neutral-2)"></i></div><div class="clock-l"><b>45 h</b><span>in Junk</span></div></div>
+  <div class="subject" title="Heal****iwan">Heal****iwan</div>
+  <div class="from" title="thp@****g.tw">thp@****g.tw</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="6f30b5215146e3c1">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="6f30b5215146e3c1">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="thp@****g.tw"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from thp@****g.tw">Not a customer</button></form>
+  </div>
+</li><li class="row s-junk">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--neutral)"></i>In Junk</span>
+    <span class="mbx">sales@</span><span>Sun 01 Nov, 21:20</span></div>
+  <div class="clock"><div class="meter"><i style="width:100%;background:var(--neutral-2)"></i></div><div class="clock-l"><b>43 h</b><span>in Junk</span></div></div>
+  <div class="subject" title="Do Y****ing?">Do Y****ing?</div>
+  <div class="from" title="a.al****.com">a.al****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="708d5b9834c5ac64">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="708d5b9834c5ac64">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="a.al****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from a.al****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-junk">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--neutral)"></i>In Junk</span>
+    <span class="mbx">sales@</span><span>Mon 02 Nov, 03:07</span></div>
+  <div class="clock"><div class="meter"><i style="width:100%;background:var(--neutral-2)"></i></div><div class="clock-l"><b>37 h</b><span>in Junk</span></div></div>
+  <div class="subject" title="Re: ****ons&quot;">Re: ****ons&quot;</div>
+  <div class="from" title="stef****ital">stef****ital</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="993b290feacbac9f">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="993b290feacbac9f">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="stef****ital"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from stef****ital">Not a customer</button></form>
+  </div>
+</li><li class="row s-junk">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--neutral)"></i>In Junk</span>
+    <span class="mbx">sales@</span><span>Mon 02 Nov, 03:56</span></div>
+  <div class="clock"><div class="meter"><i style="width:100%;background:var(--neutral-2)"></i></div><div class="clock-l"><b>37 h</b><span>in Junk</span></div></div>
+  <div class="subject" title="New ****tion">New ****tion</div>
+  <div class="from" title="jenn****.com">jenn****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="1e90a2e0caf7c5c4">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="1e90a2e0caf7c5c4">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="jenn****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from jenn****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-junk">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--neutral)"></i>In Junk</span>
+    <span class="mbx">sales@</span><span>Mon 02 Nov, 06:26</span></div>
+  <div class="clock"><div class="meter"><i style="width:100%;background:var(--neutral-2)"></i></div><div class="clock-l"><b>34 h</b><span>in Junk</span></div></div>
+  <div class="subject" title="RE: ****List">RE: ****List</div>
+  <div class="from" title="moni****.com">moni****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="ad1eb968581a536d">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="ad1eb968581a536d">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="moni****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from moni****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-junk">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--neutral)"></i>In Junk</span>
+    <span class="mbx">sales@</span><span>Mon 02 Nov, 06:37</span></div>
+  <div class="clock"><div class="meter"><i style="width:100%;background:var(--neutral-2)"></i></div><div class="clock-l"><b>34 h</b><span>in Junk</span></div></div>
+  <div class="subject" title="A cl****Kong">A cl****Kong</div>
+  <div class="from" title="feli****.com">feli****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="3fb65385b4cc4f76">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="3fb65385b4cc4f76">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="feli****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from feli****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-junk">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--neutral)"></i>In Junk</span>
+    <span class="mbx">sales@</span><span>Mon 02 Nov, 08:17</span></div>
+  <div class="clock"><div class="meter"><i style="width:100%;background:var(--neutral-2)"></i></div><div class="clock-l"><b>32 h</b><span>in Junk</span></div></div>
+  <div class="subject" title="Want****age?">Want****age?</div>
+  <div class="from" title="isab****.com">isab****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="c1890878b4486ef9">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="c1890878b4486ef9">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="isab****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from isab****.com">Not a customer</button></form>
+  </div>
+</li><li class="row s-junk">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--neutral)"></i>In Junk</span>
+    <span class="mbx">sales@</span><span>Mon 02 Nov, 10:07</span></div>
+  <div class="clock"><div class="meter"><i style="width:100%;background:var(--neutral-2)"></i></div><div class="clock-l"><b>30 h</b><span>in Junk</span></div></div>
+  <div class="subject" title="RSNA****base">RSNA****base</div>
+  <div class="from" title="henr****.com">henr****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="8d2fea75a4dca26c">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="sales"><input type="hidden" name="thread" value="8d2fea75a4dca26c">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="henr****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from henr****.com">Not a customer</button></form>
+  </div>
+</li></ul>
+    </section>
+    <div class="side">
+      <section class="panel"><div class="panel-head"><h2>The 48-hour clock</h2><span>open threads by age</span></div><div class="chart"><div class="legend"><span><i style="background:var(--accent)"></i>On track</span><span><i style="background:var(--warning)"></i>At risk</span><span><i style="background:var(--critical)"></i>Overdue</span></div><svg viewBox="0 0 360 170" role="img"><line class="grid" x1="30" x2="360" y1="148.0" y2="148.0"/><text class="ax" x="24" y="151.5" text-anchor="end">0</text><line class="grid" x1="30" x2="360" y1="117.5" y2="117.5"/><text class="ax" x="24" y="121.0" text-anchor="end">5</text><line class="grid" x1="30" x2="360" y1="87.0" y2="87.0"/><text class="ax" x="24" y="90.5" text-anchor="end">10</text><line class="grid" x1="30" x2="360" y1="56.5" y2="56.5"/><text class="ax" x="24" y="60.0" text-anchor="end">15</text><line class="grid" x1="30" x2="360" y1="26.0" y2="26.0"/><text class="ax" x="24" y="29.5" text-anchor="end">20</text><rect class="hit" x="30.0" y="26" width="47.1" height="122" data-tip="Waiting &lt;12h · none"/><text class="ax" x="53.6" y="164" text-anchor="middle">&lt;12h</text><rect class="hit" x="77.1" y="26" width="47.1" height="122" data-tip="Waiting 12–24h · none"/><text class="ax" x="100.7" y="164" text-anchor="middle">12–24h</text><path d="M134.9,148.0 V103.2 Q134.9,99.2 138.9,99.2 H156.9 Q160.9,99.2 160.9,103.2 V148.0 Z" fill="var(--accent)"/><text class="val" x="147.9" y="95.2" text-anchor="middle">8</text><rect class="hit" x="124.3" y="26" width="47.1" height="122" data-tip="Waiting 24–36h · On track: 8"/><text class="ax" x="147.9" y="164" text-anchor="middle">24–36h</text><path d="M182.0,148.0 V145.9 Q182.0,141.9 186.0,141.9 H204.0 Q208.0,141.9 208.0,145.9 V148.0 Z" fill="var(--warning)"/><text class="val" x="195.0" y="137.9" text-anchor="middle">1</text><rect class="hit" x="171.4" y="26" width="47.1" height="122" data-tip="Waiting 36–48h · At risk: 1"/><text class="ax" x="195.0" y="164" text-anchor="middle">36–48h</text><path d="M229.1,148.0 V133.7 Q229.1,129.7 233.1,129.7 H251.1 Q255.1,129.7 255.1,133.7 V148.0 Z" fill="var(--critical)"/><text class="val" x="242.1" y="125.7" text-anchor="middle">3</text><rect class="hit" x="218.6" y="26" width="47.1" height="122" data-tip="Waiting 2–3d · Overdue: 3"/><text class="ax" x="242.1" y="164" text-anchor="middle">2–3d</text><path d="M276.3,148.0 V72.7 Q276.3,68.7 280.3,68.7 H298.3 Q302.3,68.7 302.3,72.7 V148.0 Z" fill="var(--critical)"/><text class="val" x="289.3" y="64.7" text-anchor="middle">13</text><rect class="hit" x="265.7" y="26" width="47.1" height="122" data-tip="Waiting 3–7d · Overdue: 13"/><text class="ax" x="289.3" y="164" text-anchor="middle">3–7d</text><path d="M323.4,148.0 V30.0 Q323.4,26.0 327.4,26.0 H345.4 Q349.4,26.0 349.4,30.0 V148.0 Z" fill="var(--critical)"/><text class="val" x="336.4" y="22.0" text-anchor="middle">20</text><rect class="hit" x="312.9" y="26" width="47.1" height="122" data-tip="Waiting 7d+ · Overdue: 20"/><text class="ax" x="336.4" y="164" text-anchor="middle">7d+</text><line class="ref" x1="171.4" x2="171.4" y1="18" y2="148"/><text class="refl" x="168.4" y="14" text-anchor="end">36 h warn</text><line class="ref" x1="218.6" x2="218.6" y1="18" y2="148"/><text class="refl" x="221.6" y="14" text-anchor="start">48 h due</text></svg><p class="caption">Open threads by hours (h) or days (d) since the customer wrote. Most deadlines are 48 h; orders mentioning gloves, eyewear or Apollo are due at 24 h, so some of them are overdue in the 24–48 h columns.</p><details class="tbl"><summary>Show as table</summary><div class="tbl-wrap"><table><thead><tr><th></th><th>On track</th><th>At risk</th><th>Overdue</th></tr></thead><tbody><tr><td>Waiting &lt;12h</td><td>0</td><td>0</td><td>0</td></tr><tr><td>Waiting 12–24h</td><td>0</td><td>0</td><td>0</td></tr><tr><td>Waiting 24–36h</td><td>8</td><td>0</td><td>0</td></tr><tr><td>Waiting 36–48h</td><td>0</td><td>1</td><td>0</td></tr><tr><td>Waiting 2–3d</td><td>0</td><td>0</td><td>3</td></tr><tr><td>Waiting 3–7d</td><td>0</td><td>0</td><td>13</td></tr><tr><td>Waiting 7d+</td><td>0</td><td>0</td><td>20</td></tr></tbody></table></div></details></div></section>
+      <section class="panel"><div class="panel-head"><h2>Day by day</h2><span>last 14 days</span></div><div class="chart"><div class="legend"><span><i style="background:var(--good)"></i>Answered in time</span><span><i style="background:var(--serious)"></i>Answered late</span><span><i style="background:var(--neutral)"></i>Taken, time unknown</span><span><i style="background:var(--accent)"></i>Open, within deadline</span><span><i style="background:var(--neutral-2)"></i>In Junk</span><span><i style="background:var(--critical)"></i>Overdue</span></div><svg viewBox="0 0 360 170" role="img"><line class="grid" x1="30" x2="360" y1="148.0" y2="148.0"/><text class="ax" x="24" y="151.5" text-anchor="end">0</text><line class="grid" x1="30" x2="360" y1="114.5" y2="114.5"/><text class="ax" x="24" y="118.0" text-anchor="end">5</text><line class="grid" x1="30" x2="360" y1="81.0" y2="81.0"/><text class="ax" x="24" y="84.5" text-anchor="end">10</text><line class="grid" x1="30" x2="360" y1="47.5" y2="47.5"/><text class="ax" x="24" y="51.0" text-anchor="end">15</text><line class="grid" x1="30" x2="360" y1="14.0" y2="14.0"/><text class="ax" x="24" y="17.5" text-anchor="end">20</text><rect x="34.5" y="136.6" width="14.6" height="11.4" fill="var(--good)"/><rect x="34.5" y="116.5" width="14.6" height="18.1" fill="var(--neutral)"/><path d="M34.5,114.5 V91.7 Q34.5,87.7 38.5,87.7 H45.1 Q49.1,87.7 49.1,91.7 V114.5 Z" fill="var(--critical)"/><rect class="hit" x="30.0" y="14" width="23.6" height="134" data-tip="Wed 21 Oct · Answered in time: 2, Taken, time unknown: 3, Overdue: 4"/><text class="ax" x="41.8" y="164" text-anchor="middle">21</text><rect x="58.0" y="143.3" width="14.6" height="4.7" fill="var(--neutral)"/><path d="M58.0,141.3 V125.2 Q58.0,121.2 62.0,121.2 H68.7 Q72.7,121.2 72.7,125.2 V141.3 Z" fill="var(--critical)"/><rect class="hit" x="53.6" y="14" width="23.6" height="134" data-tip="Thu 22 Oct · Taken, time unknown: 1, Overdue: 3"/><text class="ax" x="65.4" y="164" text-anchor="middle">22</text><rect x="81.6" y="143.3" width="14.6" height="4.7" fill="var(--neutral)"/><path d="M81.6,141.3 V131.9 Q81.6,127.9 85.6,127.9 H92.2 Q96.2,127.9 96.2,131.9 V141.3 Z" fill="var(--critical)"/><rect class="hit" x="77.1" y="14" width="23.6" height="134" data-tip="Fri 23 Oct · Taken, time unknown: 1, Overdue: 2"/><text class="ax" x="88.9" y="164" text-anchor="middle">23</text><path d="M105.2,148.0 V138.6 Q105.2,134.6 109.2,134.6 H115.8 Q119.8,134.6 119.8,138.6 V148.0 Z" fill="var(--critical)"/><rect class="hit" x="100.7" y="14" width="23.6" height="134" data-tip="Sat 24 Oct · Overdue: 2"/><text class="ax" x="112.5" y="164" text-anchor="middle">24</text><path d="M128.8,148.0 V145.3 Q128.8,141.3 132.8,141.3 H139.4 Q143.4,141.3 143.4,145.3 V148.0 Z" fill="var(--critical)"/><rect class="hit" x="124.3" y="14" width="23.6" height="134" data-tip="Sun 25 Oct · Overdue: 1"/><text class="ax" x="136.1" y="164" text-anchor="middle">25</text><rect x="152.3" y="143.3" width="14.6" height="4.7" fill="var(--good)"/><path d="M152.3,141.3 V138.6 Q152.3,134.6 156.3,134.6 H163.0 Q167.0,134.6 167.0,138.6 V141.3 Z" fill="var(--neutral)"/><rect class="hit" x="147.9" y="14" width="23.6" height="134" data-tip="Mon 26 Oct · Answered in time: 1, Taken, time unknown: 1"/><text class="ax" x="159.6" y="164" text-anchor="middle">26</text><path d="M175.9,148.0 V125.2 Q175.9,121.2 179.9,121.2 H186.5 Q190.5,121.2 190.5,125.2 V148.0 Z" fill="var(--critical)"/><rect class="hit" x="171.4" y="14" width="23.6" height="134" data-tip="Tue 27 Oct · Overdue: 4"/><text class="ax" x="183.2" y="164" text-anchor="middle">27</text><path d="M199.5,148.0 V118.5 Q199.5,114.5 203.5,114.5 H210.1 Q214.1,114.5 214.1,118.5 V148.0 Z" fill="var(--critical)"/><rect class="hit" x="195.0" y="14" width="23.6" height="134" data-tip="Wed 28 Oct · Overdue: 5"/><text class="ax" x="206.8" y="164" text-anchor="middle">28</text><rect x="223.1" y="129.9" width="14.6" height="18.1" fill="var(--neutral)"/><path d="M223.1,127.9 V98.4 Q223.1,94.4 227.1,94.4 H233.7 Q237.7,94.4 237.7,98.4 V127.9 Z" fill="var(--critical)"/><rect class="hit" x="218.6" y="14" width="23.6" height="134" data-tip="Thu 29 Oct · Taken, time unknown: 3, Overdue: 5"/><text class="ax" x="230.4" y="164" text-anchor="middle">29</text><rect x="246.6" y="129.9" width="14.6" height="18.1" fill="var(--neutral-2)"/><path d="M246.6,127.9 V111.8 Q246.6,107.8 250.6,107.8 H257.2 Q261.2,107.8 261.2,111.8 V127.9 Z" fill="var(--critical)"/><rect class="hit" x="242.1" y="14" width="23.6" height="134" data-tip="Fri 30 Oct · In Junk: 3, Overdue: 3"/><text class="ax" x="253.9" y="164" text-anchor="middle">30</text><rect x="270.2" y="143.3" width="14.6" height="4.7" fill="var(--neutral)"/><path d="M270.2,141.3 V111.8 Q270.2,107.8 274.2,107.8 H280.8 Q284.8,107.8 284.8,111.8 V141.3 Z" fill="var(--neutral-2)"/><rect class="hit" x="265.7" y="14" width="23.6" height="134" data-tip="Sat 31 Oct · Taken, time unknown: 1, In Junk: 5"/><text class="ax" x="277.5" y="164" text-anchor="middle">31</text><rect x="293.8" y="109.8" width="14.6" height="38.2" fill="var(--neutral-2)"/><path d="M293.8,107.8 V91.7 Q293.8,87.7 297.8,87.7 H304.4 Q308.4,87.7 308.4,91.7 V107.8 Z" fill="var(--critical)"/><rect class="hit" x="289.3" y="14" width="23.6" height="134" data-tip="Sun 01 Nov · In Junk: 6, Overdue: 3"/><text class="ax" x="301.1" y="164" text-anchor="middle">01</text><rect x="317.3" y="143.3" width="14.6" height="4.7" fill="var(--neutral)"/><rect x="317.3" y="83.0" width="14.6" height="58.3" fill="var(--accent)"/><path d="M317.3,81.0 V44.8 Q317.3,40.8 321.3,40.8 H328.0 Q332.0,40.8 332.0,44.8 V81.0 Z" fill="var(--neutral-2)"/><rect class="hit" x="312.9" y="14" width="23.6" height="134" data-tip="Mon 02 Nov · Taken, time unknown: 1, Open, within deadline: 9, In Junk: 6"/><text class="ax" x="324.6" y="164" text-anchor="middle">02</text><rect class="hit" x="336.4" y="14" width="23.6" height="134" data-tip="Tue 03 Nov · none"/><text class="ax" x="348.2" y="164" text-anchor="middle">03</text></svg><p class="caption">New customer threads per day (UTC), coloured by where each one stands now.</p><details class="tbl"><summary>Show as table</summary><div class="tbl-wrap"><table><thead><tr><th></th><th>Answered in time</th><th>Answered late</th><th>Taken, time unknown</th><th>Open, within deadline</th><th>In Junk</th><th>Overdue</th></tr></thead><tbody><tr><td>Wed 21 Oct</td><td>2</td><td>0</td><td>3</td><td>0</td><td>0</td><td>4</td></tr><tr><td>Thu 22 Oct</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>3</td></tr><tr><td>Fri 23 Oct</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>2</td></tr><tr><td>Sat 24 Oct</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>2</td></tr><tr><td>Sun 25 Oct</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td></tr><tr><td>Mon 26 Oct</td><td>1</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td></tr><tr><td>Tue 27 Oct</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>4</td></tr><tr><td>Wed 28 Oct</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>5</td></tr><tr><td>Thu 29 Oct</td><td>0</td><td>0</td><td>3</td><td>0</td><td>0</td><td>5</td></tr><tr><td>Fri 30 Oct</td><td>0</td><td>0</td><td>0</td><td>0</td><td>3</td><td>3</td></tr><tr><td>Sat 31 Oct</td><td>0</td><td>0</td><td>1</td><td>0</td><td>5</td><td>0</td></tr><tr><td>Sun 01 Nov</td><td>0</td><td>0</td><td>0</td><td>0</td><td>6</td><td>3</td></tr><tr><td>Mon 02 Nov</td><td>0</td><td>0</td><td>1</td><td>9</td><td>6</td><td>0</td></tr><tr><td>Tue 03 Nov</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr></tbody></table></div></details></div></section>
+      <section class="panel"><div class="panel-head"><h2>By mailbox</h2><span>all queues</span></div>
+        <div class="tbl-wrap"><table class="mtable"><thead><tr><th>Mailbox</th><th>Threads</th><th>In time</th><th>Overdue</th><th>Categorised</th></tr></thead>
+        <tbody><tr><td class="mono">global@</td><td>175</td><td><span class="pct"><span class="bar"><i style="width:41%"></i></span>41%</span></td><td>40</td><td>11</td></tr><tr><td class="mono">hello@</td><td>1</td><td><span class="pct"><span class="bar"><i style="width:0%"></i></span>0%</span></td><td>0</td><td>0</td></tr><tr><td class="mono">latam@</td><td>24</td><td><span class="pct"><span class="bar"><i style="width:0%"></i></span>0%</span></td><td>3</td><td>0</td></tr><tr><td class="mono">orders@</td><td>656</td><td><span class="pct"><span class="bar"><i style="width:3%"></i></span>3%</span></td><td>378</td><td>173</td></tr><tr><td class="mono">rma@</td><td>15</td><td><span class="pct"><span class="bar"><i style="width:60%"></i></span>60%</span></td><td>1</td><td>6</td></tr><tr><td class="mono">sales@</td><td>79</td><td><span class="pct"><span class="bar"><i style="width:8%"></i></span>8%</span></td><td>36</td><td>0</td></tr></tbody></table></div></section>
+      <section class="panel"><div class="panel-head"><h2>Noise filter</h2><span>17 threads not tracked</span></div><ul class="fl"><li><span>system or platform sender</span><span>17</span></li><li><span>tracked, no alert: a team member owns the thread</span><span>11</span></li></ul></section>
+      <section class="panel"><div class="panel-head"><h2>Recently handled</h2><span>Handled clicks</span></div><ul class="feed"><li style="display:block;color:var(--ink-3)">No Handled clicks yet. Click Handled on a thread to see it here.</li></ul></section>
+    </div>
+  </div>
+  <p class="note">"Overdue" means no reply from the shared mailbox, no category and no Handled click before the deadline.
+  Replies sent from personal mailboxes are invisible today, which is why the Handled button exists.
+  Deadlines and the product match (subject keywords) are demo placeholders until Pr**** confirms them.</p>
+</main>
+</div>
+<div id="tip" hidden></div>
+<script>
+(function(){
+  var root=document.documentElement, KEY_WHO='inboxwatch-who', KEY_THEME='inboxwatch-theme';
+  function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+  var t=store(KEY_THEME); if(t==='light'||t==='dark') root.setAttribute('data-theme',t);
+  var who=document.getElementById('who');
+  if(who){var saved=store(KEY_WHO); if(saved) who.value=saved; who.onchange=function(){store(KEY_WHO,who.value)};}
+  var tb=document.getElementById('theme-btn');
+  if(tb){var cur=root.getAttribute('data-theme')||'system'; tb.querySelector('span').textContent='Theme: '+cur;
+    tb.onclick=function(){var c=root.getAttribute('data-theme')||'system', n=c==='system'?'light':c==='light'?'dark':'system';
+      if(n==='system'){root.removeAttribute('data-theme')}else{root.setAttribute('data-theme',n)} store(KEY_THEME,n); tb.querySelector('span').textContent='Theme: '+n;};}
+  var timer;
+  function toast(msg,onUndo){var old=document.querySelector('.toast'); if(old) old.remove(); clearTimeout(timer);
+    var el=document.createElement('div'); el.className='toast'; el.setAttribute('role','status'); el.textContent=msg;
+    if(onUndo){var b=document.createElement('button'); b.textContent='Undo'; b.onclick=function(){el.remove();onUndo()}; el.appendChild(b);}
+    document.body.appendChild(el); timer=setTimeout(function(){el.remove()},6000);}
+  var VERB={'/handled':'took','/waiting':'is waiting on the customer for'};
+  document.querySelectorAll('form.act').forEach(function(f){f.onsubmit=function(ev){ev.preventDefault();
+    var row=f.closest('.row'), by=(who&&who.value.trim())||'Demo user', action=f.getAttribute('action');
+    var subject=row.querySelector('.subject').textContent, from=row.querySelector('.from').textContent;
+    var hidden=action==='/not-customer'?Array.prototype.filter.call(document.querySelectorAll('.row'),function(r){
+      return r.querySelector('.from').textContent===from}):[row];
+    hidden.forEach(function(r){r.classList.add('leaving')});
+    var item=null, feed=document.querySelector('.feed');
+    if(VERB[action]&&feed){item=document.createElement('li'); var b=document.createElement('b'); b.textContent=by;
+      var d=document.createElement('div'); d.appendChild(b); d.appendChild(document.createTextNode(' '+VERB[action]+' '+subject));
+      var s=document.createElement('span'); s.className='t'; s.appendChild(d); item.appendChild(s);
+      var first=feed.querySelector('li'); if(first&&!first.querySelector('.t')) first.remove(); feed.prepend(item);}
+    setTimeout(function(){hidden.forEach(function(r){r.hidden=true})},260);
+    var msg=action==='/handled'?'Marked handled by '+by:action==='/waiting'?'Clock paused by '+by+' until the customer writes again':from+' is no longer tracked';
+    toast(msg+' (demo: not saved)',function(){hidden.forEach(function(r){r.hidden=false;r.classList.remove('leaving')}); if(item) item.remove();});};});
+  document.querySelectorAll('a[data-outlook]').forEach(function(a){a.onclick=function(ev){ev.preventDefault();
+    toast('In the live system this opens the message in Outlook on the web.',null)};});
+  var tip=document.getElementById('tip');
+  document.querySelectorAll('[data-tip]').forEach(function(el){
+    el.addEventListener('mousemove',function(e){tip.textContent=el.getAttribute('data-tip');tip.hidden=false;
+      var x=Math.min(e.clientX+14,window.innerWidth-tip.offsetWidth-8);tip.style.left=x+'px';tip.style.top=(e.clientY-36)+'px';});
+    el.addEventListener('mouseleave',function(){tip.hidden=true});});
+})();
+</script></body></html>

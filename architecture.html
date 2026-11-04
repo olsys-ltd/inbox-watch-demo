@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Inbox Watch Architecture</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Crect%20width%3D%2216%22%20height%3D%2216%22%20rx%3D%224%22%20fill%3D%22%230b7285%22/%3E%3Cg%20transform%3D%22translate%281.6%201.6%29%20scale%28.8%29%22%20color%3D%22%23ffffff%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M3.5%202.5h9A1.5%201.5%200%200%201%2014%204v5.5a1.5%201.5%200%200%201-1.5%201.5H7.2L4.5%2013.6V11h-1A1.5%201.5%200%200%201%202%209.5V4a1.5%201.5%200%200%201%201.5-1.5z%22%20stroke%3D%22currentColor%22%20stroke-width%3D%221.5%22%20stroke-linejoin%3D%22round%22/%3E%3Cpath%20d%3D%22M5.4%206.9l1.8%201.8%203.4-3.5%22%20stroke%3D%22currentColor%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one wide column; the system diagram is the centrepiece, tables and flows follow. Same tokens as the dashboard. */
+:root{
+  --bg:#f2f4f6;--surface:#ffffff;--surface-2:#f7f8fa;--ink:#101418;--ink-2:#525a66;--ink-3:#868e9a;--line:#e1e5ea;
+  --accent:#0b7285;--accent-ink:#ffffff;--accent-wash:#e2f2f4;
+  --ai:#6250d6;--ai-wash:#ece9fb;--warn-wash:#fdf3dc;
+  --font:"Geist","Segoe UI",system-ui,sans-serif;--mono:"Geist Mono",ui-monospace,Consolas,monospace;
+  --shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.06);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+  --bg:#0f1216;--surface:#161a1f;--surface-2:#1b2026;--ink:#eaedf0;--ink-2:#a6adb8;--ink-3:#727a86;--line:#262c34;
+  --accent:#3bc9db;--accent-ink:#06191c;--accent-wash:#10292e;--ai:#9085e9;--ai-wash:#1f1b3a;--warn-wash:#2e2414;--shadow:none}}
+:root[data-theme="dark"]{color-scheme:dark;
+  --bg:#0f1216;--surface:#161a1f;--surface-2:#1b2026;--ink:#eaedf0;--ink-2:#a6adb8;--ink-3:#727a86;--line:#262c34;
+  --accent:#3bc9db;--accent-ink:#06191c;--accent-wash:#10292e;--ai:#9085e9;--ai-wash:#1f1b3a;--warn-wash:#2e2414;--shadow:none}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--font);-webkit-font-smoothing:antialiased;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.page{max-width:76rem;margin:0 auto;padding-block:24px 72px;display:flex;flex-direction:column;gap:36px}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.back{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--ink-2);font-size:13.5px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 12px}
+.back:hover{color:var(--ink)}
+.eyebrow{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+h1{margin:6px 0 0;font-size:32px;font-weight:600;letter-spacing:-.02em;text-wrap:balance}
+h2{margin:0;font-size:21px;font-weight:600;letter-spacing:-.01em;text-wrap:balance}
+.lead{margin:8px 0 0;color:var(--ink-2);max-width:68ch;font-size:16px}
+section{display:flex;flex-direction:column;gap:14px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+.diagram{overflow-x:auto;padding:16px}
+.diagram svg{display:block;width:100%;min-width:900px;height:auto;font-family:var(--font)}
+.g{fill:none;stroke:var(--line);stroke-width:1.5}
+.gl{fill:var(--ink-3);font:500 10.5px var(--mono);letter-spacing:.07em}
+.b-ext{fill:var(--surface-2);stroke:var(--line);stroke-width:1.2}
+.b-m365{fill:var(--surface);stroke:var(--ink-3);stroke-width:1.2}
+.b-cfg{fill:var(--surface);stroke:var(--ink-3);stroke-width:1.2;stroke-dasharray:5 4}
+.b-new{fill:var(--accent-wash);stroke:var(--accent);stroke-width:1.8}
+.b-ai{fill:var(--ai-wash);stroke:var(--ai);stroke-width:1.8}
+.b-later{fill:var(--ai-wash);stroke:var(--ai);stroke-width:1.4;stroke-dasharray:5 4}
+.t{fill:var(--ink);font-size:13px;font-weight:600}
+.s{fill:var(--ink-2);font-size:11px}
+.e{fill:none;stroke:var(--ink-2);stroke-width:1.3}
+.e.new{stroke:var(--accent);stroke-width:1.7}
+.e.dash{stroke-dasharray:5 4}
+.el{fill:var(--ink-3);font:10.5px var(--mono)}
+.el.new{fill:var(--accent)}
+.ah{fill:var(--ink-2)}.ahn{fill:var(--accent)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:13px;color:var(--ink-2);padding:0 16px 16px}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.sw{width:22px;height:14px;border-radius:4px;display:inline-block}
+.sw.m365{background:var(--surface);border:1.2px solid var(--ink-3)}
+.sw.cfg{background:var(--surface);border:1.2px dashed var(--ink-3)}
+.sw.new{background:var(--accent-wash);border:1.8px solid var(--accent)}
+.sw.ai{background:var(--ai-wash);border:1.8px solid var(--ai)}
+.sw.later{background:var(--ai-wash);border:1.4px dashed var(--ai)}
+figcaption{font-size:13px;color:var(--ink-3);padding:0 16px 16px;max-width:90ch}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th{font:500 10.5px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:500;white-space:nowrap}
+.tag{display:inline-block;font:500 11px var(--mono);padding:1px 8px;border-radius:5px;white-space:nowrap}
+.tag.rules{background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2)}
+.tag.ai{background:var(--ai-wash);color:var(--ai)}
+.tag.none{color:var(--ink-3)}
+.tag.p{background:var(--accent-wash);color:var(--accent)}
+.tag.opt{background:var(--warn-wash);color:var(--ink-2)}
+.grp td{background:var(--surface-2);font:500 11px var(--mono);text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);padding:8px 14px}
+.flows{display:grid;grid-template-columns:repeat(auto-fit,minmax(20rem,1fr));gap:16px}
+.flow{padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.flow h3{margin:0;font-size:15px;font-weight:600}
+.flow ol{margin:0;padding-left:1.2rem;display:flex;flex-direction:column;gap:6px;color:var(--ink-2);font-size:14px}
+.flow ol li::marker{font:500 12px var(--mono);color:var(--accent)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(18rem,1fr));gap:16px}
+.card{padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+.card h3{margin:0;font-size:15px;font-weight:600}
+.card ul{margin:0;padding-left:1.1rem;display:flex;flex-direction:column;gap:5px;color:var(--ink-2);font-size:14px}
+.mono{font-family:var(--mono);font-size:.92em}
+.note{font-size:13px;color:var(--ink-3);max-width:90ch;margin:0}
+</style>
+</head><body>
+<div class="page">
+  <div class="top">
+    <span style="display:flex;gap:6px;flex-wrap:wrap"><a class="back" href="index.html">← Dashboard</a><a class="back" href="later.html">Later phases →</a></span>
+    <span class="eyebrow">Proposed architecture · draft</span>
+  </div>
+  <header>
+    <div class="eyebrow">Prot****ical · Inbox Watch</div>
+    <h1>How the production system fits together</h1>
+    <p class="lead">Your team keeps working in Outlook. Mail rules and a few Outlook buttons do the simple things.
+    A small service in your own Azure keeps a clock on every customer thread, uses AI only where it has to read
+    the email, and reports in Teams and on this dashboard. Nothing is ever sent to customers automatically.</p>
+  </header>
+
+  <section>
+    <h2>Components and connections</h2>
+    <figure class="panel" style="margin:0">
+      <div class="diagram">
+        <svg viewBox="0 0 1100 640" role="img" aria-label="Customers and website forms send email into the shared mailboxes in Microsoft 365. Graph events carry each new or changed message to the Inbox Watch service in Azure, which runs ingest, a rules-based noise filter, an AI classifier, the SLA engine, a scheduler and a notifier. The notifier posts alerts to a Teams channel. Button clicks in the Outlook add-in and in Teams go to the service API. The thread history feeds the dashboard and the assistant. An optional link to the order system can close the clock for orders.">
+          <defs>
+            <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" class="ah"/></marker>
+            <marker id="an" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" class="ahn"/></marker>
+          </defs>
+
+          <!-- outside -->
+          <text x="20" y="58" class="gl">OUTSIDE</text>
+          <rect x="20" y="70" width="160" height="60" rx="8" class="b-ext"/>
+          <text x="100" y="96" text-anchor="middle" class="t">Customers</text>
+          <text x="100" y="114" text-anchor="middle" class="s">orders · questions</text>
+          <rect x="20" y="150" width="160" height="56" rx="8" class="b-ext"/>
+          <text x="100" y="174" text-anchor="middle" class="t">Website forms</text>
+          <text x="100" y="192" text-anchor="middle" class="s">Contact Us</text>
+          <rect x="20" y="420" width="160" height="70" rx="8" class="b-cfg"/>
+          <text x="100" y="446" text-anchor="middle" class="t">Order system</text>
+          <text x="100" y="464" text-anchor="middle" class="s">optional link:</text>
+          <text x="100" y="479" text-anchor="middle" class="s">"order accepted"</text>
+
+          <!-- Microsoft 365 -->
+          <rect x="210" y="40" width="270" height="580" rx="12" class="g"/>
+          <text x="226" y="62" class="gl">MICROSOFT 365 · YOUR TENANT</text>
+          <rect x="230" y="70" width="230" height="60" rx="8" class="b-m365"/>
+          <text x="345" y="94" text-anchor="middle" class="t">Shared mailboxes</text>
+          <text x="345" y="112" text-anchor="middle" class="s">orders · global · sales · rma · latam · hello</text>
+          <rect x="230" y="150" width="230" height="56" rx="8" class="b-cfg"/>
+          <text x="345" y="173" text-anchor="middle" class="t">Mail rules</text>
+          <text x="345" y="191" text-anchor="middle" class="s">foldering · form routing · latam owner</text>
+          <rect x="230" y="236" width="230" height="84" rx="8" class="b-new"/>
+          <text x="345" y="260" text-anchor="middle" class="t">Outlook add-in</text>
+          <text x="345" y="278" text-anchor="middle" class="s">Handled · Waiting on customer</text>
+          <text x="345" y="294" text-anchor="middle" class="s">Not a customer · status pane</text>
+          <text x="345" y="310" text-anchor="middle" class="s">sets the category</text>
+          <rect x="230" y="340" width="230" height="56" rx="8" class="b-cfg"/>
+          <text x="345" y="363" text-anchor="middle" class="t">Quick Step</text>
+          <text x="345" y="381" text-anchor="middle" class="s">no-code start: one click = CONFIRM SENT</text>
+          <rect x="230" y="420" width="230" height="70" rx="8" class="b-m365"/>
+          <text x="345" y="446" text-anchor="middle" class="t">Teams channel</text>
+          <text x="345" y="464" text-anchor="middle" class="s">alerts · escalations</text>
+          <text x="345" y="479" text-anchor="middle" class="s">Taken · Open · Not a customer</text>
+          <rect x="230" y="520" width="230" height="60" rx="8" class="b-later"/>
+          <text x="345" y="545" text-anchor="middle" class="t">Copilot in Outlook</text>
+          <text x="345" y="563" text-anchor="middle" class="s">optional: drafts, summaries</text>
+
+          <!-- Azure service -->
+          <rect x="520" y="40" width="560" height="580" rx="12" class="g"/>
+          <text x="536" y="62" class="gl">INBOX WATCH SERVICE · YOUR AZURE SUBSCRIPTION</text>
+          <rect x="540" y="70" width="220" height="60" rx="8" class="b-new"/>
+          <text x="650" y="94" text-anchor="middle" class="t">Ingest</text>
+          <text x="650" y="112" text-anchor="middle" class="s">Graph events + 15-min sync</text>
+          <rect x="540" y="156" width="220" height="56" rx="8" class="b-new"/>
+          <text x="650" y="179" text-anchor="middle" class="t">Noise filter</text>
+          <text x="650" y="197" text-anchor="middle" class="s">rules · Not-a-customer list</text>
+          <rect x="540" y="238" width="220" height="70" rx="8" class="b-ai"/>
+          <text x="650" y="262" text-anchor="middle" class="t">AI classifier</text>
+          <text x="650" y="280" text-anchor="middle" class="s">order · inquiry · status · other</text>
+          <text x="650" y="296" text-anchor="middle" class="s">product · urgency</text>
+          <rect x="540" y="334" width="220" height="60" rx="8" class="b-new"/>
+          <text x="650" y="358" text-anchor="middle" class="t">SLA engine</text>
+          <text x="650" y="376" text-anchor="middle" class="s">deadlines · pause · ownership</text>
+          <rect x="540" y="420" width="220" height="60" rx="8" class="b-new"/>
+          <text x="650" y="444" text-anchor="middle" class="t">Scheduler</text>
+          <text x="650" y="462" text-anchor="middle" class="s">every 15 min: warn · escalate</text>
+          <rect x="540" y="506" width="220" height="60" rx="8" class="b-new"/>
+          <text x="650" y="530" text-anchor="middle" class="t">Notifier</text>
+          <text x="650" y="548" text-anchor="middle" class="s">Teams cards · weekly digest</text>
+
+          <rect x="820" y="70" width="240" height="60" rx="8" class="b-new"/>
+          <text x="940" y="94" text-anchor="middle" class="t">API</text>
+          <text x="940" y="112" text-anchor="middle" class="s">Microsoft sign-in (Entra)</text>
+          <rect x="820" y="156" width="240" height="56" rx="8" class="b-new"/>
+          <text x="940" y="179" text-anchor="middle" class="t">Thread history</text>
+          <text x="940" y="197" text-anchor="middle" class="s">status · events · who / when</text>
+          <rect x="820" y="250" width="240" height="56" rx="8" class="b-new"/>
+          <text x="940" y="273" text-anchor="middle" class="t">Dashboard</text>
+          <text x="940" y="291" text-anchor="middle" class="s">queues · SLA · charts · digest</text>
+          <rect x="820" y="334" width="240" height="60" rx="8" class="b-later"/>
+          <text x="940" y="358" text-anchor="middle" class="t">Assistant</text>
+          <text x="940" y="376" text-anchor="middle" class="s">optional: ask in plain language</text>
+          <rect x="820" y="420" width="240" height="60" rx="8" class="b-later"/>
+          <text x="940" y="444" text-anchor="middle" class="t">Order completeness</text>
+          <text x="940" y="462" text-anchor="middle" class="s">phase 3: AI extracts, rules compare</text>
+          <rect x="820" y="506" width="240" height="60" rx="8" class="b-later"/>
+          <text x="940" y="530" text-anchor="middle" class="t">Sales routing · reply quality</text>
+          <text x="940" y="548" text-anchor="middle" class="s">phase 2 · later</text>
+          <text x="540" y="604" class="gl">ALSO: KEY VAULT (CERTIFICATE) · APPLICATION INSIGHTS (MONITORING)</text>
+
+          <!-- inbound mail -->
+          <path d="M180,100 H226" class="e" marker-end="url(#a)"/>
+          <text x="203" y="92" text-anchor="middle" class="el">email</text>
+          <path d="M180,178 H226" class="e" marker-end="url(#a)"/>
+          <text x="203" y="170" text-anchor="middle" class="el">form</text>
+          <path d="M345,150 V134" class="e" marker-end="url(#a)"/>
+          <!-- mailbox to service -->
+          <path d="M460,100 H536" class="e new" marker-end="url(#an)"/>
+          <text x="514" y="92" text-anchor="middle" class="el new">Graph</text>
+          <!-- pipeline -->
+          <path d="M650,130 V152" class="e new" marker-end="url(#an)"/>
+          <path d="M650,212 V234" class="e new" marker-end="url(#an)"/>
+          <path d="M650,308 V330" class="e new" marker-end="url(#an)"/>
+          <path d="M650,394 V416" class="e new" marker-end="url(#an)"/>
+          <path d="M650,480 V502" class="e new" marker-end="url(#an)"/>
+          <!-- SLA engine writes thread history -->
+          <path d="M760,364 H790 V184 H816" class="e new" marker-end="url(#an)"/>
+          <text x="796" y="230" class="el new">state</text>
+          <!-- history feeds dashboard / assistant -->
+          <path d="M940,212 V246" class="e new" marker-end="url(#an)"/>
+          <path d="M1060,184 H1072 V364 H1064" class="e new" marker-end="url(#an)"/>
+          <!-- API writes marks -->
+          <path d="M940,130 V152" class="e new" marker-end="url(#an)"/>
+          <!-- notifier to Teams -->
+          <path d="M540,536 H505 V470 H464" class="e new" marker-end="url(#an)"/>
+          <!-- button clicks to API over the top -->
+          <path d="M460,278 H490 V24 H940 V66" class="e new" marker-end="url(#an)"/>
+          <path d="M460,440 H490 V278" class="e new"/>
+          <text x="700" y="18" text-anchor="middle" class="el new">button clicks: Handled · Waiting · Not a customer · Taken</text>
+          <!-- order system -->
+          <path d="M100,490 V612 H515 V364 H536" class="e dash" marker-end="url(#a)"/>
+          <text x="300" y="606" text-anchor="middle" class="el">order accepted → closes the clock</text>
+        </svg>
+      </div>
+      <div class="legend">
+        <span><i class="sw m365"></i>already in Microsoft 365</span>
+        <span><i class="sw cfg"></i>configured, no code</span>
+        <span><i class="sw new"></i>new build</span>
+        <span><i class="sw ai"></i>AI (Azure OpenAI)</span>
+        <span><i class="sw later"></i>optional or later phase</span>
+      </div>
+      <figcaption>The service only reads the six shared mailboxes and writes Outlook categories back; an Exchange access
+      policy limits it to those mailboxes. It posts to Teams and the dashboard. It never emails customers and never reads
+      personal mailboxes.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>What each part does</h2>
+    <div class="panel tbl">
+      <table>
+        <thead><tr><th>Component</th><th>Runs in</th><th>What it does</th><th>Logic</th><th>Phase</th></tr></thead>
+        <tbody>
+          <tr class="grp"><td colspan="5">In the mailbox</td></tr>
+          <tr><td>Mail rules</td><td>Exchange</td><td>Existing foldering by customer stays. New: website forms to the right box, latam@ to its owner, optional copy of staff replies (needs your consent).</td><td><span class="tag rules">rules</span></td><td><span class="tag p">1</span></td></tr>
+          <tr><td>Quick Step</td><td>Outlook</td><td>One click sets <span class="mono">CONFIRM SENT</span>. Works tomorrow, without a build; it can't tell who clicked.</td><td><span class="tag none">—</span></td><td><span class="tag p">now</span></td></tr>
+          <tr><td>Outlook add-in</td><td>New Outlook, classic, web</td><td><b>Handled</b>, <b>Waiting on customer</b> (pauses the clock), <b>Not a customer</b>, later <b>Assign to…</b>; a pane with deadline, time left and who took it. Deployed to everyone by your admin.</td><td><span class="tag none">—</span></td><td><span class="tag p">1</span></td></tr>
+          <tr><td>Teams channel</td><td>Teams</td><td>Alert before the deadline, escalation after it. Card buttons: Taken, Open in Outlook, Not a customer.</td><td><span class="tag none">—</span></td><td><span class="tag p">1</span></td></tr>
+          <tr><td>Copilot in Outlook</td><td>Outlook</td><td>Helps a person draft or summarise a reply. Not part of the watch; only if you have the licences.</td><td><span class="tag ai">Copilot</span></td><td><span class="tag opt">optional</span></td></tr>
+          <tr class="grp"><td colspan="5">Inbox Watch service</td></tr>
+          <tr><td>Ingest</td><td>Azure Functions</td><td>Receives Microsoft Graph events for new and changed mail; a sync every 15 minutes catches anything missed.</td><td><span class="tag none">—</span></td><td><span class="tag p">1</span></td></tr>
+          <tr><td>Noise filter</td><td>service</td><td>Drops system and platform senders, Cc-only copies and senders marked "Not a customer". Threads a team member owns are tracked without alerts.</td><td><span class="tag rules">rules</span></td><td><span class="tag p">1</span></td></tr>
+          <tr><td>AI classifier</td><td>Azure OpenAI</td><td>Reads what passed the filter: order, inquiry, status request or other; which product (gloves, eyewear, Apollo); how urgent.</td><td><span class="tag ai">AI</span></td><td><span class="tag p">1</span></td></tr>
+          <tr><td>SLA engine</td><td>service</td><td>Deadline per mailbox and type, business hours, pause while waiting on the customer, handled signals (reply, category, button, order system).</td><td><span class="tag rules">rules</span></td><td><span class="tag p">1</span></td></tr>
+          <tr><td>Scheduler</td><td>Azure Functions timer</td><td>Every 15 minutes: warning at 75 % of the deadline, escalation at the deadline, repeat escalation to a manager.</td><td><span class="tag rules">rules</span></td><td><span class="tag p">1</span></td></tr>
+          <tr><td>Notifier</td><td>service</td><td>Teams cards with a link to the email; the Monday digest.</td><td><span class="tag none">—</span></td><td><span class="tag p">1</span></td></tr>
+          <tr><td>Thread history</td><td>Azure Table Storage or Postgres</td><td>Every thread, every status change, who clicked what and when. The source of every number.</td><td><span class="tag none">—</span></td><td><span class="tag p">1</span></td></tr>
+          <tr><td>API</td><td>Azure, Microsoft sign-in</td><td>Receives button clicks from Outlook and Teams, serves the dashboard.</td><td><span class="tag none">—</span></td><td><span class="tag p">1</span></td></tr>
+          <tr><td>Dashboard</td><td>Static Web App, Microsoft sign-in</td><td>Queues, deadlines, compliance per mailbox and per week, noise filter, recent actions.</td><td><span class="tag none">—</span></td><td><span class="tag p">1</span></td></tr>
+          <tr><td>Assistant</td><td>service</td><td>Ask "what is overdue in orders@?" in plain language.</td><td><span class="tag ai">AI</span></td><td><span class="tag opt">optional</span></td></tr>
+          <tr><td>Sales routing</td><td>service</td><td>Assigns an owner from the classifier's topic and region and your routing rules.</td><td><span class="tag ai">AI</span> <span class="tag rules">rules</span></td><td><span class="tag p">2</span></td></tr>
+          <tr><td>Order completeness</td><td>service</td><td>AI reads the order (email and PDF); rules compare it with your required fields, catalogue and customer list; a person sends the drafted request.</td><td><span class="tag ai">AI</span> <span class="tag rules">rules</span></td><td><span class="tag p">3</span></td></tr>
+          <tr><td>Reply quality</td><td>service</td><td>Grades replies for tone and completeness. Needs access to the replies, which today mostly leave from personal mailboxes.</td><td><span class="tag ai">AI</span></td><td><span class="tag opt">later</span></td></tr>
+          <tr><td>Order system link</td><td>integration</td><td>"Order accepted" closes the clock for orders@ without any click.</td><td><span class="tag none">—</span></td><td><span class="tag opt">when known</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Rules handle anything that can be decided from the sender, recipients, time or a click. AI is used only
+    where the system has to understand the text of an email. Every AI decision can be corrected with a button, and those
+    corrections are kept to improve the filter.</p>
+  </section>
+
+  <section>
+    <h2>Three key flows</h2>
+    <div class="flows">
+      <div class="panel flow"><h3>A customer email arrives</h3><ol>
+        <li>Mail lands in orders@; your existing rules file it as today.</li>
+        <li>Graph tells the service within about a minute.</li>
+        <li>Noise filter: a system sender or Cc-only copy stops here.</li>
+        <li>AI classifier: "order, gloves, normal urgency" → 24 h deadline.</li>
+        <li>Thread history records the start of the clock.</li>
+      </ol></div>
+      <div class="panel flow"><h3>Someone takes it</h3><ol>
+        <li>A team member clicks <b>Handled</b> in Outlook (or <b>Taken</b> in Teams).</li>
+        <li>The API records who and when, and sets the Outlook category.</li>
+        <li>The clock stops; the thread leaves every queue and alert.</li>
+        <li><b>Waiting on customer</b> pauses instead; the customer's next email restarts the clock.</li>
+      </ol></div>
+      <div class="panel flow"><h3>Nobody takes it</h3><ol>
+        <li>At 75 % of the deadline the scheduler posts a warning card in Teams.</li>
+        <li>At the deadline: escalation to the person you name.</li>
+        <li>Still open later: repeat escalation to a manager.</li>
+        <li>The breach is counted in the dashboard and the Monday digest.</li>
+      </ol></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Connections, access and data</h2>
+    <div class="cols">
+      <div class="panel card"><h3>Microsoft 365</h3><ul>
+        <li>Graph application permission <span class="mono">Mail.ReadWrite</span>, limited to the six shared mailboxes by an Exchange access policy. Write is only used for categories.</li>
+        <li>Graph change notifications, renewed automatically; 15-minute sync as a safety net.</li>
+        <li>Teams: one channel, cards posted by the service.</li>
+        <li>Outlook add-in deployed centrally; it signs the user in with their Microsoft account.</li>
+      </ul></div>
+      <div class="panel card"><h3>Azure</h3><ul>
+        <li>All components in your subscription and region.</li>
+        <li>Certificate in Key Vault instead of a password.</li>
+        <li>Dashboard and API behind Microsoft sign-in, Pr**** accounts only.</li>
+        <li>Monitoring alert if the service stops receiving mail.</li>
+      </ul></div>
+      <div class="panel card"><h3>AI and data</h3><ul>
+        <li>Azure OpenAI in your Azure; email text is not used to train models.</li>
+        <li>Only mail that passed the noise filter is sent to the model.</li>
+        <li>Personal mailboxes are never read.</li>
+        <li>Nothing is sent to customers automatically; drafts always go to a person.</li>
+      </ul></div>
+      <div class="panel card"><h3>We need from you</h3><ul>
+        <li>Deadlines per mailbox and type, business hours, holidays.</li>
+        <li>Who receives escalations; owner for latam@.</li>
+        <li>Product list (gloves, eyewear, Apollo SKUs).</li>
+        <li>Which order system, and whether it can report "order accepted".</li>
+        <li>Azure subscription and region; Copilot / Power BI licences.</li>
+      </ul></div>
+    </div>
+    <p class="note">To be confirmed during setup: Azure OpenAI model availability in your region, and Outlook links opening
+    shared-mailbox messages for every team member.</p>
+  </section>
+</div>
+<script>
+(function(){try{var t=localStorage.getItem('inboxwatch-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}})();
+</script>
+</body></html>

@@ -1,0 +1,276 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Inbox Watch · Prot****ical</title><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Crect%20width%3D%2216%22%20height%3D%2216%22%20rx%3D%224%22%20fill%3D%22%230b7285%22/%3E%3Cg%20transform%3D%22translate%281.6%201.6%29%20scale%28.8%29%22%20color%3D%22%23ffffff%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M3.5%202.5h9A1.5%201.5%200%200%201%2014%204v5.5a1.5%201.5%200%200%201-1.5%201.5H7.2L4.5%2013.6V11h-1A1.5%201.5%200%200%201%202%209.5V4a1.5%201.5%200%200%201%201.5-1.5z%22%20stroke%3D%22currentColor%22%20stroke-width%3D%221.5%22%20stroke-linejoin%3D%22round%22/%3E%3Cpath%20d%3D%22M5.4%206.9l1.8%201.8%203.4-3.5%22%20stroke%3D%22currentColor%22%20stroke-width%3D%221.7%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: app shell -- queue rail on the left, work area right; the SLA clock is the signature element. */
+:root{
+  --bg:#f2f4f6;--surface:#ffffff;--surface-2:#f7f8fa;--ink:#101418;--ink-2:#525a66;--ink-3:#868e9a;--line:#e1e5ea;
+  --accent:#0b7285;--accent-ink:#ffffff;--accent-wash:#e2f2f4;
+  --good:#0ca30c;--warning:#fab219;--serious:#ec835a;--critical:#d03b3b;
+  --critical-text:#b42323;--warning-text:#8a5a00;--good-text:#0a7a0a;
+  --neutral:#9aa1ab;--neutral-2:#cdd2d8;--track:#e8ebef;
+  --shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.06);
+  --font:"Geist","Segoe UI",system-ui,sans-serif;--mono:"Geist Mono",ui-monospace,Consolas,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;
+  --bg:#0f1216;--surface:#161a1f;--surface-2:#1b2026;--ink:#eaedf0;--ink-2:#a6adb8;--ink-3:#727a86;--line:#262c34;
+  --accent:#3bc9db;--accent-ink:#06191c;--accent-wash:#10292e;
+  --critical-text:#f28b8b;--warning-text:#f6c453;--good-text:#5fd35f;
+  --neutral:#6d7582;--neutral-2:#434a55;--track:#252b33;--shadow:none}}
+:root[data-theme="dark"]{color-scheme:dark;
+  --bg:#0f1216;--surface:#161a1f;--surface-2:#1b2026;--ink:#eaedf0;--ink-2:#a6adb8;--ink-3:#727a86;--line:#262c34;
+  --accent:#3bc9db;--accent-ink:#06191c;--accent-wash:#10292e;
+  --critical-text:#f28b8b;--warning-text:#f6c453;--good-text:#5fd35f;
+  --neutral:#6d7582;--neutral-2:#434a55;--track:#252b33;--shadow:none}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 var(--font);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+.shell{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}
+.rail{position:sticky;top:0;height:100vh;overflow:auto;border-right:1px solid var(--line);background:var(--surface);
+  padding:20px 14px max(20px,env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:22px}
+.brand{display:flex;align-items:center;gap:10px;padding:0 6px}
+.brand-mark{width:28px;height:28px;border-radius:8px;background:var(--accent);display:grid;place-items:center;color:var(--accent-ink)}
+.brand div b{display:block;font-size:15px;letter-spacing:-.01em}
+.brand div span{display:block;font-size:11.5px;color:var(--ink-3)}
+.rail h3{margin:0 6px 6px;font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.queues{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}
+.queues a{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;text-decoration:none;color:var(--ink-2)}
+.queues a:hover{background:var(--surface-2);color:var(--ink)}
+.queues a.on{background:var(--accent-wash);color:var(--ink);font-weight:500}
+.queues .q-name{display:flex;flex-direction:column;line-height:1.25}
+.queues .q-sub{font-size:11.5px;color:var(--ink-3);font-weight:400}
+.count{font:500 11.5px var(--mono);min-width:26px;text-align:center;padding:1px 7px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-2)}
+.count.hot{background:var(--critical);border-color:var(--critical);color:#fff}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:3px;background:var(--surface-2);border:1px solid var(--line);border-radius:9px}
+.seg a{text-align:center;padding:5px 0;border-radius:6px;text-decoration:none;color:var(--ink-2);font-size:12.5px}
+.seg a.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow);font-weight:500}
+.who{display:flex;flex-direction:column;gap:6px;padding:0 6px}
+.who label{font-size:12px;color:var(--ink-3)}
+.who input{font:inherit;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);color:var(--ink)}
+.rail-foot{margin-top:auto;display:flex;flex-direction:column;gap:10px;padding:0 6px;font-size:11.5px;color:var(--ink-3)}
+.theme-btn{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--line);border-radius:8px;padding:5px 10px;cursor:pointer;color:var(--ink-2);width:max-content}
+
+main{padding:24px max(16px,env(safe-area-inset-right,0px)) 64px 28px;display:flex;flex-direction:column;gap:22px;min-width:0}
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.head h1{margin:0;font-size:26px;font-weight:600;letter-spacing:-.02em;text-wrap:balance}
+.head p{margin:2px 0 0;color:var(--ink-2)}
+.pill{font:500 11px var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--ink-2)}
+.pill b{color:var(--warning-text);font-weight:500}
+
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:4px;box-shadow:var(--shadow)}
+.tile .lbl{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-2)}
+.tile .val{font-size:30px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1}
+.tile .sub{font-size:12px;color:var(--ink-3)}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
+
+.work{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:22px;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.panel-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.panel-head h2{margin:0;font-size:15px;font-weight:600}
+.panel-head span{font-size:12px;color:var(--ink-3)}
+.side{display:flex;flex-direction:column;gap:22px;min-width:0}
+
+.group-h{display:flex;align-items:center;gap:8px;padding:10px 16px;font:500 11px var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);background:var(--surface-2);border-bottom:1px solid var(--line)}
+.rows{list-style:none;margin:0;padding:0}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"top clock" "subj subj" "from acts";gap:6px 20px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);transition:opacity .25s,transform .25s,background .15s}
+.row-top{grid-area:top;min-width:0}
+.row .clock{grid-area:clock;width:168px;justify-self:end}
+.row .subject{grid-area:subj;white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;line-height:1.4;font-size:14.5px}
+.row .from{grid-area:from;min-width:0}
+.row .acts{grid-area:acts;justify-self:end;flex-wrap:wrap;justify-content:flex-end}
+.row:hover{background:var(--surface-2)}
+.row.leaving{opacity:0;transform:translateX(24px)}
+.row-top{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:12px;color:var(--ink-3)}
+.status{display:inline-flex;align-items:center;gap:6px;font-weight:500;font-size:12px}
+.s-overdue .status{color:var(--critical-text)}.s-risk .status{color:var(--warning-text)}.s-junk .status{color:var(--ink-2)}
+.mbx{font-family:var(--mono);color:var(--ink-2)}
+.chip{font:500 11px var(--mono);padding:1px 7px;border-radius:5px;background:var(--accent-wash);color:var(--accent)}
+.subject{font-weight:500;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.from{font-size:12.5px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.clock{display:flex;flex-direction:column;gap:5px}
+.meter{position:relative;height:6px;border-radius:3px;background:var(--track)}
+.meter i{position:absolute;inset:0 auto 0 0;border-radius:3px}
+.meter .warn,.meter .due{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--surface);}
+.meter .warn{left:75%}
+.clock-l{display:flex;justify-content:space-between;font:12px var(--mono);font-variant-numeric:tabular-nums;color:var(--ink-3)}
+.s-overdue .clock-l b{color:var(--critical-text);font-weight:500}.s-risk .clock-l b{color:var(--warning-text);font-weight:500}
+.clock-l b{color:var(--ink-2);font-weight:500}
+.acts{display:flex;gap:6px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);cursor:pointer;text-decoration:none;font-size:12.5px;font-weight:500;color:var(--ink);white-space:nowrap}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn[disabled]{opacity:.6;cursor:progress}
+.btn.ghost{border-color:transparent;background:none;color:var(--ink-3);padding-inline:8px}
+.btn.ghost:hover{color:var(--ink);background:var(--surface-2)}
+.acts form{margin:0}
+.fl{list-style:none;margin:0;padding:6px 0}
+.fl li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 16px;font-size:13px}
+.fl li span:last-child{font-family:var(--mono);color:var(--ink-2)}
+.fl .sender{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.fl-h{padding:8px 16px 0;font:500 10.5px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3)}
+.more{display:block;padding:12px 16px;text-align:center;color:var(--accent);font-weight:500;text-decoration:none}
+.empty{padding:40px 16px;text-align:center;color:var(--ink-3)}
+
+.chart{padding:12px 16px 14px;display:flex;flex-direction:column;gap:10px}
+.chart svg{width:100%;height:auto;display:block;overflow:visible}
+.chart .ax{fill:var(--ink-3);font:10.5px var(--mono)}
+.chart .val{fill:var(--ink-2);font:500 10.5px var(--mono)}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .ref{stroke:var(--ink-3);stroke-width:1;stroke-dasharray:3 3}
+.chart .refl{fill:var(--ink-3);font:10px var(--mono)}
+.chart rect.hit{fill:transparent}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.caption{font-size:12px;color:var(--ink-3)}
+details.tbl summary{cursor:pointer;font-size:12px;color:var(--ink-3)}
+details.tbl table{width:100%;border-collapse:collapse;font:11.5px var(--mono);margin-top:6px}
+details.tbl th,details.tbl td{padding:3px 4px;border-bottom:1px solid var(--line);text-align:right}
+details.tbl th:first-child,details.tbl td:first-child{text-align:left}
+.tbl-wrap{overflow-x:auto}
+
+.mtable{width:100%;border-collapse:collapse;font-size:13px}
+.mtable th{font:500 10.5px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);text-align:right;padding:8px 16px 6px;border-bottom:1px solid var(--line)}
+.mtable td{padding:8px 16px;border-bottom:1px solid var(--line);text-align:right;font-variant-numeric:tabular-nums}
+.mtable th:first-child,.mtable td:first-child{text-align:left}
+.mtable tr:last-child td{border-bottom:0}
+.pct{display:inline-flex;align-items:center;gap:8px;justify-content:flex-end}
+.pct .bar{width:56px;height:5px;border-radius:3px;background:var(--track);position:relative;overflow:hidden}
+.pct .bar i{position:absolute;inset:0 auto 0 0;background:var(--good)}
+
+.feed{list-style:none;margin:0;padding:4px 0}
+.feed li{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 16px}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--accent-wash);color:var(--accent);display:grid;place-items:center;font:600 11px var(--font)}
+.feed .t{overflow:hidden}
+.feed .t div{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.feed .t small{color:var(--ink-3);font-size:12px}
+.link-btn{background:none;border:0;color:var(--accent);cursor:pointer;font-size:12px;font-weight:500;padding:2px 4px}
+.note{font-size:12.5px;color:var(--ink-3);max-width:72ch;line-height:1.55;margin:0}
+
+#tip{position:fixed;pointer-events:none;z-index:50;background:var(--ink);color:var(--bg);font:12px var(--font);padding:6px 9px;border-radius:7px;box-shadow:0 4px 14px rgba(0,0,0,.18);white-space:nowrap}
+.toast{position:fixed;left:50%;bottom:max(20px,calc(env(safe-area-inset-bottom,0px) + 12px));transform:translateX(-50%);z-index:60;display:flex;align-items:center;gap:14px;background:var(--ink);color:var(--bg);padding:10px 12px 10px 16px;border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.22);font-size:13px}
+.toast button{background:none;border:0;color:var(--accent);font-weight:600;cursor:pointer;padding:4px 6px}
+:root[data-theme="dark"] .toast button{color:#0b7285}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .toast button{color:#0b7285}}
+
+@media (max-width:1180px){.work{grid-template-columns:1fr}.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:760px){
+  .shell{grid-template-columns:1fr}
+  .rail{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:14px max(16px,env(safe-area-inset-left,0px)) 14px max(16px,env(safe-area-inset-right,0px));gap:12px}
+  .queues{flex-direction:row;overflow-x:auto;gap:6px}
+  .queues a{white-space:nowrap}
+  .queues .q-sub,.rail-foot .src{display:none}
+  .rail-foot{margin-top:0}
+  main{padding:18px max(16px,env(safe-area-inset-right,0px)) 48px max(16px,env(safe-area-inset-left,0px))}
+  .row{grid-template-columns:1fr;grid-template-areas:"top" "clock" "subj" "from" "acts";gap:8px}
+  .row .acts{justify-self:start;justify-content:flex-start}
+  .row .clock{width:100%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body>
+<div id="app" class="shell">
+<aside class="rail">
+  <div class="brand"><span class="brand-mark"><svg width="17" height="17" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 2.5h9A1.5 1.5 0 0 1 14 4v5.5a1.5 1.5 0 0 1-1.5 1.5H7.2L4.5 13.6V11h-1A1.5 1.5 0 0 1 2 9.5V4a1.5 1.5 0 0 1 1.5-1.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M5.4 6.9l1.8 1.8 3.4-3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>Inbox Watch</b><span>Prot****ical</span></div></div>
+  <nav aria-label="Mailboxes"><h3>Queues</h3><ul class="queues"><li><a href="index.html" class=""><span class="q-name">All mailboxes<span class="q-sub">950 threads</span></span><span class="count hot">506</span></a></li><li><a href="global-14.html" class=""><span class="q-name">global@<span class="q-sub">175 threads · 41% in time</span></span><span class="count hot">40</span></a></li><li><a href="hello-14.html" class=""><span class="q-name">hello@<span class="q-sub">stale: data from 02 Nov</span></span><span class="count">0</span></a></li><li><a href="latam-14.html" class=""><span class="q-name">latam@<span class="q-sub">24 threads · 0% in time</span></span><span class="count hot">23</span></a></li><li><a href="orders-14.html" class=""><span class="q-name">orders@<span class="q-sub">656 threads · 3% in time</span></span><span class="count hot">385</span></a></li><li><a href="rma-14.html" class="on"><span class="q-name">rma@<span class="q-sub">15 threads · 60% in time</span></span><span class="count hot">1</span></a></li><li><a href="sales-14.html" class=""><span class="q-name">sales@<span class="q-sub">stale: data from 02 Nov</span></span><span class="count hot">57</span></a></li></ul></nav>
+  <div><h3>Period</h3><div class="seg"><a href="rma-7.html" class="">7 days</a><a href="rma-14.html" class="on">14 days</a><a href="rma-30.html" class="">30 days</a></div></div>
+  <div class="who"><label for="who">You are</label><input id="who" value="Demo user" autocomplete="off"></div>
+  <div class="rail-foot"><div style="display:flex;flex-wrap:wrap;gap:6px"><button class="theme-btn" id="theme-btn" type="button"><span>Theme: system</span></button>
+    <a class="theme-btn" href="architecture.html" style="text-decoration:none">Architecture →</a>
+    <a class="theme-btn" href="later.html" style="text-decoration:none">Later phases →</a></div>
+    <span class="src">Data as of Tue 03 Nov 2026, 16:30 UTC. Read-only: nothing is written to the mailboxes.</span></div>
+</aside>
+<main>
+  <div class="head"><div><h1>rma@</h1><p>Customer threads that started in the last 14 days</p></div>
+    <span style="display:flex;flex-wrap:wrap;gap:6px;align-items:center"><span class="pill" style="background:var(--accent-wash);color:var(--accent);border-color:transparent;font-weight:600">Phase 1 · MVP</span>
+    <span class="pill"><b>Public demo</b> · data masked · snapshot 03 Nov 16:30 UTC</span></span></div>
+  <div class="tiles"><div class="tile"><span class="lbl"><i class="dot" style="background:var(--critical)"></i>Overdue</span><span class="val">1</span><span class="sub">no visible reply after the deadline</span></div><div class="tile"><span class="lbl"><i class="dot" style="background:var(--warning)"></i>At risk</span><span class="val">0</span><span class="sub">past 75 % of the deadline</span></div><div class="tile"><span class="lbl"><i class="dot" style="background:var(--neutral)"></i>In Junk</span><span class="val">0</span><span class="sub">customer mail nobody answered</span></div><div class="tile"><span class="lbl"><i class="dot" style="background:var(--good)"></i>Answered in time</span><span class="val">60%</span><span class="sub">3 of 5 with a known time</span></div></div>
+  <div class="work">
+    <section class="panel" aria-label="Needs attention">
+      <div class="panel-head"><h2>Needs attention</h2><span>1 threads · most urgent first</span></div>
+      <div class="group-h">Overdue <span class="mono">· 1</span></div><ul class="rows"><li class="row s-overdue">
+  <div class="row-top"><span class="status"><i class="dot" style="background:var(--critical)"></i>Overdue</span>
+    <span class="mbx">rma@</span><span>Thu 22 Oct, 19:02</span></div>
+  <div class="clock" data-tip="285 h since the customer wrote · deadline 48 h"><div class="meter"><i style="width:100%;background:var(--critical)"></i><span class="warn"></span></div><div class="clock-l"><b>+238 h</b><span>of 48 h</span></div></div>
+  <div class="subject" title="RMA ****0750">RMA ****0750</div>
+  <div class="from" title="adam****.com">adam****.com</div>
+  <div class="acts">
+    <form class="act" method="post" action="/handled">
+      <input type="hidden" name="mailbox" value="rma"><input type="hidden" name="thread" value="4553da075bafbc10">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn primary" type="submit">Handled</button></form>
+    <a class="btn" href="#" data-outlook="1" target="_blank" rel="noopener">Outlook <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4.5 2.5h-2v7h7v-2M7 2.5h2.5V5M9.5 2.5 5.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+    <form class="act" method="post" action="/waiting">
+      <input type="hidden" name="mailbox" value="rma"><input type="hidden" name="thread" value="4553da075bafbc10">
+      <input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Pause the clock until the customer writes again">Waiting on customer</button></form>
+    <form class="act" method="post" action="/not-customer">
+      <input type="hidden" name="address" value="adam****.com"><input type="hidden" name="by" value="Demo user">
+      <button class="btn ghost" type="submit" title="Stop tracking mail from adam****.com">Not a customer</button></form>
+  </div>
+</li></ul>
+    </section>
+    <div class="side">
+      <section class="panel"><div class="panel-head"><h2>The 48-hour clock</h2><span>open threads by age</span></div><div class="chart"><div class="legend"><span><i style="background:var(--accent)"></i>On track</span><span><i style="background:var(--warning)"></i>At risk</span><span><i style="background:var(--critical)"></i>Overdue</span></div><svg viewBox="0 0 360 170" role="img"><line class="grid" x1="30" x2="360" y1="148.0" y2="148.0"/><text class="ax" x="24" y="151.5" text-anchor="end">0</text><line class="grid" x1="30" x2="360" y1="117.5" y2="117.5"/><text class="ax" x="24" y="121.0" text-anchor="end">1</text><line class="grid" x1="30" x2="360" y1="87.0" y2="87.0"/><text class="ax" x="24" y="90.5" text-anchor="end">2</text><line class="grid" x1="30" x2="360" y1="56.5" y2="56.5"/><text class="ax" x="24" y="60.0" text-anchor="end">3</text><line class="grid" x1="30" x2="360" y1="26.0" y2="26.0"/><text class="ax" x="24" y="29.5" text-anchor="end">4</text><rect class="hit" x="30.0" y="26" width="47.1" height="122" data-tip="Waiting &lt;12h · none"/><text class="ax" x="53.6" y="164" text-anchor="middle">&lt;12h</text><rect class="hit" x="77.1" y="26" width="47.1" height="122" data-tip="Waiting 12–24h · none"/><text class="ax" x="100.7" y="164" text-anchor="middle">12–24h</text><rect class="hit" x="124.3" y="26" width="47.1" height="122" data-tip="Waiting 24–36h · none"/><text class="ax" x="147.9" y="164" text-anchor="middle">24–36h</text><rect class="hit" x="171.4" y="26" width="47.1" height="122" data-tip="Waiting 36–48h · none"/><text class="ax" x="195.0" y="164" text-anchor="middle">36–48h</text><rect class="hit" x="218.6" y="26" width="47.1" height="122" data-tip="Waiting 2–3d · none"/><text class="ax" x="242.1" y="164" text-anchor="middle">2–3d</text><rect class="hit" x="265.7" y="26" width="47.1" height="122" data-tip="Waiting 3–7d · none"/><text class="ax" x="289.3" y="164" text-anchor="middle">3–7d</text><path d="M323.4,148.0 V121.5 Q323.4,117.5 327.4,117.5 H345.4 Q349.4,117.5 349.4,121.5 V148.0 Z" fill="var(--critical)"/><text class="val" x="336.4" y="113.5" text-anchor="middle">1</text><rect class="hit" x="312.9" y="26" width="47.1" height="122" data-tip="Waiting 7d+ · Overdue: 1"/><text class="ax" x="336.4" y="164" text-anchor="middle">7d+</text><line class="ref" x1="171.4" x2="171.4" y1="18" y2="148"/><text class="refl" x="168.4" y="14" text-anchor="end">36 h warn</text><line class="ref" x1="218.6" x2="218.6" y1="18" y2="148"/><text class="refl" x="221.6" y="14" text-anchor="start">48 h due</text></svg><p class="caption">Open threads by hours (h) or days (d) since the customer wrote. Most deadlines are 48 h; orders mentioning gloves, eyewear or Apollo are due at 24 h, so some of them are overdue in the 24–48 h columns.</p><details class="tbl"><summary>Show as table</summary><div class="tbl-wrap"><table><thead><tr><th></th><th>On track</th><th>At risk</th><th>Overdue</th></tr></thead><tbody><tr><td>Waiting &lt;12h</td><td>0</td><td>0</td><td>0</td></tr><tr><td>Waiting 12–24h</td><td>0</td><td>0</td><td>0</td></tr><tr><td>Waiting 24–36h</td><td>0</td><td>0</td><td>0</td></tr><tr><td>Waiting 36–48h</td><td>0</td><td>0</td><td>0</td></tr><tr><td>Waiting 2–3d</td><td>0</td><td>0</td><td>0</td></tr><tr><td>Waiting 3–7d</td><td>0</td><td>0</td><td>0</td></tr><tr><td>Waiting 7d+</td><td>0</td><td>0</td><td>1</td></tr></tbody></table></div></details></div></section>
+      <section class="panel"><div class="panel-head"><h2>Day by day</h2><span>last 14 days</span></div><div class="chart"><div class="legend"><span><i style="background:var(--good)"></i>Answered in time</span><span><i style="background:var(--serious)"></i>Answered late</span><span><i style="background:var(--neutral)"></i>Taken, time unknown</span><span><i style="background:var(--accent)"></i>Open, within deadline</span><span><i style="background:var(--neutral-2)"></i>In Junk</span><span><i style="background:var(--critical)"></i>Overdue</span></div><svg viewBox="0 0 360 170" role="img"><line class="grid" x1="30" x2="360" y1="148.0" y2="148.0"/><text class="ax" x="24" y="151.5" text-anchor="end">0</text><line class="grid" x1="30" x2="360" y1="114.5" y2="114.5"/><text class="ax" x="24" y="118.0" text-anchor="end">1</text><line class="grid" x1="30" x2="360" y1="81.0" y2="81.0"/><text class="ax" x="24" y="84.5" text-anchor="end">2</text><line class="grid" x1="30" x2="360" y1="47.5" y2="47.5"/><text class="ax" x="24" y="51.0" text-anchor="end">3</text><line class="grid" x1="30" x2="360" y1="14.0" y2="14.0"/><text class="ax" x="24" y="17.5" text-anchor="end">4</text><rect class="hit" x="30.0" y="14" width="23.6" height="134" data-tip="Wed 21 Oct · none"/><text class="ax" x="41.8" y="164" text-anchor="middle">21</text><rect x="58.0" y="116.5" width="14.6" height="31.5" fill="var(--neutral)"/><path d="M58.0,114.5 V85.0 Q58.0,81.0 62.0,81.0 H68.7 Q72.7,81.0 72.7,85.0 V114.5 Z" fill="var(--critical)"/><rect class="hit" x="53.6" y="14" width="23.6" height="134" data-tip="Thu 22 Oct · Taken, time unknown: 1, Overdue: 1"/><text class="ax" x="65.4" y="164" text-anchor="middle">22</text><path d="M81.6,148.0 V118.5 Q81.6,114.5 85.6,114.5 H92.2 Q96.2,114.5 96.2,118.5 V148.0 Z" fill="var(--neutral)"/><rect class="hit" x="77.1" y="14" width="23.6" height="134" data-tip="Fri 23 Oct · Taken, time unknown: 1"/><text class="ax" x="88.9" y="164" text-anchor="middle">23</text><path d="M105.2,148.0 V118.5 Q105.2,114.5 109.2,114.5 H115.8 Q119.8,114.5 119.8,118.5 V148.0 Z" fill="var(--serious)"/><rect class="hit" x="100.7" y="14" width="23.6" height="134" data-tip="Sat 24 Oct · Answered late: 1"/><text class="ax" x="112.5" y="164" text-anchor="middle">24</text><rect class="hit" x="124.3" y="14" width="23.6" height="134" data-tip="Sun 25 Oct · none"/><text class="ax" x="136.1" y="164" text-anchor="middle">25</text><rect x="152.3" y="116.5" width="14.6" height="31.5" fill="var(--good)"/><path d="M152.3,114.5 V18.0 Q152.3,14.0 156.3,14.0 H163.0 Q167.0,14.0 167.0,18.0 V114.5 Z" fill="var(--neutral)"/><rect class="hit" x="147.9" y="14" width="23.6" height="134" data-tip="Mon 26 Oct · Answered in time: 1, Taken, time unknown: 3"/><text class="ax" x="159.6" y="164" text-anchor="middle">26</text><rect x="175.9" y="116.5" width="14.6" height="31.5" fill="var(--good)"/><path d="M175.9,114.5 V85.0 Q175.9,81.0 179.9,81.0 H186.5 Q190.5,81.0 190.5,85.0 V114.5 Z" fill="var(--neutral)"/><rect class="hit" x="171.4" y="14" width="23.6" height="134" data-tip="Tue 27 Oct · Answered in time: 1, Taken, time unknown: 1"/><text class="ax" x="183.2" y="164" text-anchor="middle">27</text><path d="M199.5,148.0 V118.5 Q199.5,114.5 203.5,114.5 H210.1 Q214.1,114.5 214.1,118.5 V148.0 Z" fill="var(--neutral)"/><rect class="hit" x="195.0" y="14" width="23.6" height="134" data-tip="Wed 28 Oct · Taken, time unknown: 1"/><text class="ax" x="206.8" y="164" text-anchor="middle">28</text><path d="M223.1,148.0 V118.5 Q223.1,114.5 227.1,114.5 H233.7 Q237.7,114.5 237.7,118.5 V148.0 Z" fill="var(--neutral)"/><rect class="hit" x="218.6" y="14" width="23.6" height="134" data-tip="Thu 29 Oct · Taken, time unknown: 1"/><text class="ax" x="230.4" y="164" text-anchor="middle">29</text><rect class="hit" x="242.1" y="14" width="23.6" height="134" data-tip="Fri 30 Oct · none"/><text class="ax" x="253.9" y="164" text-anchor="middle">30</text><rect class="hit" x="265.7" y="14" width="23.6" height="134" data-tip="Sat 31 Oct · none"/><text class="ax" x="277.5" y="164" text-anchor="middle">31</text><rect class="hit" x="289.3" y="14" width="23.6" height="134" data-tip="Sun 01 Nov · none"/><text class="ax" x="301.1" y="164" text-anchor="middle">01</text><path d="M317.3,148.0 V118.5 Q317.3,114.5 321.3,114.5 H328.0 Q332.0,114.5 332.0,118.5 V148.0 Z" fill="var(--neutral)"/><rect class="hit" x="312.9" y="14" width="23.6" height="134" data-tip="Mon 02 Nov · Taken, time unknown: 1"/><text class="ax" x="324.6" y="164" text-anchor="middle">02</text><path d="M340.9,148.0 V118.5 Q340.9,114.5 344.9,114.5 H351.5 Q355.5,114.5 355.5,118.5 V148.0 Z" fill="var(--good)"/><rect class="hit" x="336.4" y="14" width="23.6" height="134" data-tip="Tue 03 Nov · Answered in time: 1"/><text class="ax" x="348.2" y="164" text-anchor="middle">03</text></svg><p class="caption">New customer threads per day (UTC), coloured by where each one stands now.</p><details class="tbl"><summary>Show as table</summary><div class="tbl-wrap"><table><thead><tr><th></th><th>Answered in time</th><th>Answered late</th><th>Taken, time unknown</th><th>Open, within deadline</th><th>In Junk</th><th>Overdue</th></tr></thead><tbody><tr><td>Wed 21 Oct</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>Thu 22 Oct</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>1</td></tr><tr><td>Fri 23 Oct</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td></tr><tr><td>Sat 24 Oct</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>Sun 25 Oct</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>Mon 26 Oct</td><td>1</td><td>0</td><td>3</td><td>0</td><td>0</td><td>0</td></tr><tr><td>Tue 27 Oct</td><td>1</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td></tr><tr><td>Wed 28 Oct</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td></tr><tr><td>Thu 29 Oct</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td></tr><tr><td>Fri 30 Oct</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>Sat 31 Oct</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>Sun 01 Nov</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>Mon 02 Nov</td><td>0</td><td>0</td><td>1</td><td>0</td><td>0</td><td>0</td></tr><tr><td>Tue 03 Nov</td><td>1</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr></tbody></table></div></details></div></section>
+      <section class="panel"><div class="panel-head"><h2>By mailbox</h2><span>all queues</span></div>
+        <div class="tbl-wrap"><table class="mtable"><thead><tr><th>Mailbox</th><th>Threads</th><th>In time</th><th>Overdue</th><th>Categorised</th></tr></thead>
+        <tbody><tr><td class="mono">global@</td><td>175</td><td><span class="pct"><span class="bar"><i style="width:41%"></i></span>41%</span></td><td>40</td><td>11</td></tr><tr><td class="mono">hello@</td><td>1</td><td><span class="pct"><span class="bar"><i style="width:0%"></i></span>0%</span></td><td>0</td><td>0</td></tr><tr><td class="mono">latam@</td><td>24</td><td><span class="pct"><span class="bar"><i style="width:0%"></i></span>0%</span></td><td>3</td><td>0</td></tr><tr><td class="mono">orders@</td><td>656</td><td><span class="pct"><span class="bar"><i style="width:3%"></i></span>3%</span></td><td>378</td><td>173</td></tr><tr><td class="mono">rma@</td><td>15</td><td><span class="pct"><span class="bar"><i style="width:60%"></i></span>60%</span></td><td>1</td><td>6</td></tr><tr><td class="mono">sales@</td><td>79</td><td><span class="pct"><span class="bar"><i style="width:8%"></i></span>8%</span></td><td>36</td><td>0</td></tr></tbody></table></div></section>
+      <section class="panel"><div class="panel-head"><h2>Noise filter</h2><span>2 threads not tracked</span></div><ul class="fl"><li><span>shared box only in Cc</span><span>2</span></li><li><span>tracked, no alert: a team member owns the thread</span><span>4</span></li></ul></section>
+      <section class="panel"><div class="panel-head"><h2>Recently handled</h2><span>Handled clicks</span></div><ul class="feed"><li style="display:block;color:var(--ink-3)">No Handled clicks yet. Click Handled on a thread to see it here.</li></ul></section>
+    </div>
+  </div>
+  <p class="note">"Overdue" means no reply from the shared mailbox, no category and no Handled click before the deadline.
+  Replies sent from personal mailboxes are invisible today, which is why the Handled button exists.
+  Deadlines and the product match (subject keywords) are demo placeholders until Pr**** confirms them.</p>
+</main>
+</div>
+<div id="tip" hidden></div>
+<script>
+(function(){
+  var root=document.documentElement, KEY_WHO='inboxwatch-who', KEY_THEME='inboxwatch-theme';
+  function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+  var t=store(KEY_THEME); if(t==='light'||t==='dark') root.setAttribute('data-theme',t);
+  var who=document.getElementById('who');
+  if(who){var saved=store(KEY_WHO); if(saved) who.value=saved; who.onchange=function(){store(KEY_WHO,who.value)};}
+  var tb=document.getElementById('theme-btn');
+  if(tb){var cur=root.getAttribute('data-theme')||'system'; tb.querySelector('span').textContent='Theme: '+cur;
+    tb.onclick=function(){var c=root.getAttribute('data-theme')||'system', n=c==='system'?'light':c==='light'?'dark':'system';
+      if(n==='system'){root.removeAttribute('data-theme')}else{root.setAttribute('data-theme',n)} store(KEY_THEME,n); tb.querySelector('span').textContent='Theme: '+n;};}
+  var timer;
+  function toast(msg,onUndo){var old=document.querySelector('.toast'); if(old) old.remove(); clearTimeout(timer);
+    var el=document.createElement('div'); el.className='toast'; el.setAttribute('role','status'); el.textContent=msg;
+    if(onUndo){var b=document.createElement('button'); b.textContent='Undo'; b.onclick=function(){el.remove();onUndo()}; el.appendChild(b);}
+    document.body.appendChild(el); timer=setTimeout(function(){el.remove()},6000);}
+  var VERB={'/handled':'took','/waiting':'is waiting on the customer for'};
+  document.querySelectorAll('form.act').forEach(function(f){f.onsubmit=function(ev){ev.preventDefault();
+    var row=f.closest('.row'), by=(who&&who.value.trim())||'Demo user', action=f.getAttribute('action');
+    var subject=row.querySelector('.subject').textContent, from=row.querySelector('.from').textContent;
+    var hidden=action==='/not-customer'?Array.prototype.filter.call(document.querySelectorAll('.row'),function(r){
+      return r.querySelector('.from').textContent===from}):[row];
+    hidden.forEach(function(r){r.classList.add('leaving')});
+    var item=null, feed=document.querySelector('.feed');
+    if(VERB[action]&&feed){item=document.createElement('li'); var b=document.createElement('b'); b.textContent=by;
+      var d=document.createElement('div'); d.appendChild(b); d.appendChild(document.createTextNode(' '+VERB[action]+' '+subject));
+      var s=document.createElement('span'); s.className='t'; s.appendChild(d); item.appendChild(s);
+      var first=feed.querySelector('li'); if(first&&!first.querySelector('.t')) first.remove(); feed.prepend(item);}
+    setTimeout(function(){hidden.forEach(function(r){r.hidden=true})},260);
+    var msg=action==='/handled'?'Marked handled by '+by:action==='/waiting'?'Clock paused by '+by+' until the customer writes again':from+' is no longer tracked';
+    toast(msg+' (demo: not saved)',function(){hidden.forEach(function(r){r.hidden=false;r.classList.remove('leaving')}); if(item) item.remove();});};});
+  document.querySelectorAll('a[data-outlook]').forEach(function(a){a.onclick=function(ev){ev.preventDefault();
+    toast('In the live system this opens the message in Outlook on the web.',null)};});
+  var tip=document.getElementById('tip');
+  document.querySelectorAll('[data-tip]').forEach(function(el){
+    el.addEventListener('mousemove',function(e){tip.textContent=el.getAttribute('data-tip');tip.hidden=false;
+      var x=Math.min(e.clientX+14,window.innerWidth-tip.offsetWidth-8);tip.style.left=x+'px';tip.style.top=(e.clientY-36)+'px';});
+    el.addEventListener('mouseleave',function(){tip.hidden=true});});
+})();
+</script></body></html>
