@@ -36,7 +36,8 @@ button{font:inherit;color:inherit}
 .rail{position:sticky;top:0;height:100vh;overflow:auto;border-right:1px solid var(--line);background:var(--surface);
   padding:20px 14px max(20px,env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:22px}
 .brand{display:flex;align-items:center;gap:10px;padding:0 6px}
-.brand-mark{width:28px;height:28px;border-radius:8px;background:var(--accent);display:grid;place-items:center;color:var(--accent-ink)}
+.brand-mark{width:34px;height:34px;flex:none;border-radius:9px;background:#0b7285;display:grid;place-items:center;color:#fff}
+.brand-mark svg{display:block}
 .brand div b{display:block;font-size:15px;letter-spacing:-.01em}
 .brand div span{display:block;font-size:11.5px;color:var(--ink-3)}
 .rail h3{margin:0 6px 6px;font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
@@ -179,7 +180,7 @@ details.tbl th:first-child,details.tbl td:first-child{text-align:left}
 </style></head><body>
 <div id="app" class="shell">
 <aside class="rail">
-  <div class="brand"><span class="brand-mark"><svg width="17" height="17" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 2.5h9A1.5 1.5 0 0 1 14 4v5.5a1.5 1.5 0 0 1-1.5 1.5H7.2L4.5 13.6V11h-1A1.5 1.5 0 0 1 2 9.5V4a1.5 1.5 0 0 1 1.5-1.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M5.4 6.9l1.8 1.8 3.4-3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>Inbox Watch</b><span>Prot****ical</span></div></div>
+  <div class="brand"><span class="brand-mark"><svg width="21" height="21" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 2.5h9A1.5 1.5 0 0 1 14 4v5.5a1.5 1.5 0 0 1-1.5 1.5H7.2L4.5 13.6V11h-1A1.5 1.5 0 0 1 2 9.5V4a1.5 1.5 0 0 1 1.5-1.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M5.4 6.9l1.8 1.8 3.4-3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>Inbox Watch</b><span>Prot****ical</span></div></div>
   <nav aria-label="Mailboxes"><h3>Queues</h3><ul class="queues"><li><a href="all-7.html" class=""><span class="q-name">All mailboxes<span class="q-sub">457 threads</span></span><span class="count hot">251</span></a></li><li><a href="global-7.html" class="on"><span class="q-name">global@<span class="q-sub">79 threads · 41% in time</span></span><span class="count hot">21</span></a></li><li><a href="hello-7.html" class=""><span class="q-name">hello@<span class="q-sub">stale: data from 02 Nov</span></span><span class="count">0</span></a></li><li><a href="latam-7.html" class=""><span class="q-name">latam@<span class="q-sub">13 threads · 0% in time</span></span><span class="count hot">13</span></a></li><li><a href="orders-7.html" class=""><span class="q-name">orders@<span class="q-sub">310 threads · 3% in time</span></span><span class="count hot">180</span></a></li><li><a href="rma-7.html" class=""><span class="q-name">rma@<span class="q-sub">5 threads · 100% in time</span></span><span class="count">0</span></a></li><li><a href="sales-7.html" class=""><span class="q-name">sales@<span class="q-sub">stale: data from 02 Nov</span></span><span class="count hot">37</span></a></li></ul></nav>
   <div><h3>Period</h3><div class="seg"><a href="global-7.html" class="on">7 days</a><a href="global-14.html" class="">14 days</a><a href="global-30.html" class="">30 days</a></div></div>
   <div class="who"><label for="who">You are</label><input id="who" value="Demo user" autocomplete="off"></div>
